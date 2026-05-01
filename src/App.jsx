@@ -23,7 +23,6 @@ const LANES = [
   { name: "Metagenome", icon: "🌍", label: "Metagenome" },
   { name: "Microbiome", icon: "🧪", label: "Microbiome" },
   { name: "Virome", icon: "🧬", label: "Virome" },
-  { name: "Other", icon: "⚙️", label: "Other" },
 ];
 
 const CATEGORY_MAP = {

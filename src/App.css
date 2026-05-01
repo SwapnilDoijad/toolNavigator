@@ -290,6 +290,16 @@ a {
   border-color: #fde68a;
 }
 
+.lane-card.lane-virome {
+  background: #6ee7b7;
+  border-color: #6ee7b7;
+}
+
+.lane-card.lane-other {
+  background: #86efac;
+  border-color: #86efac;
+}
+
 .lane-icon {
   display: block;
   font-size: 28px;

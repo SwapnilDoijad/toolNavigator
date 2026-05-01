@@ -18,12 +18,22 @@ const STAGES = [
 
 const LANES = [
   { name: "All", icon: "🧬", label: "All tools" },
-  { name: "General", icon: "⚙️", label: "General" },
-  { name: "Phage", icon: "🦠", label: "Phage" },
   { name: "Bacteria", icon: "🧫", label: "Bacteria" },
+  { name: "Phage", icon: "🦠", label: "Phage" },
   { name: "Metagenome", icon: "🌍", label: "Metagenome" },
   { name: "Microbiome", icon: "🧪", label: "Microbiome" },
+  { name: "Virome", icon: "🧬", label: "Virome" },
+  { name: "Other", icon: "⚙️", label: "Other" },
 ];
+
+const CATEGORY_MAP = {
+  bacteria: "Bacteria",
+  phage: "Phage",
+  metagenome: "Metagenome",
+  microbiome: "Microbiome",
+  virome: "Virome",
+  other: "Other",
+};
 
 function detectStage(tool) {
   const text = `${tool.Category} ${tool.Usage} ${tool.Description}`.toLowerCase();
@@ -40,14 +50,18 @@ function detectStage(tool) {
 }
 
 function detectLane(tool) {
-  const text = `${tool.Category} ${tool.Usage} ${tool.Description}`.toLowerCase();
+  const categoryParts = (tool.Category || "")
+    .split("+")
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean);
 
-  if (text.includes("phage") || text.includes("viral") || text.includes("virus")) return "Phage";
-  if (text.includes("metagenome") || text.includes("metagenomic")) return "Metagenome";
-  if (text.includes("microbiome")) return "Microbiome";
-  if (text.includes("bacteria") || text.includes("bacterial")) return "Bacteria";
+  const lanes = categoryParts
+    .map((part) => CATEGORY_MAP[part])
+    .filter(Boolean);
 
-  return "General";
+  if (lanes.length === 0) return ["Other"];
+
+  return [...new Set(lanes)];
 }
 
 export default function App() {
@@ -69,7 +83,7 @@ export default function App() {
               .map((row) => ({
                 ...row,
                 Stage: detectStage(row),
-                Lane: detectLane(row),
+                Lanes: detectLane(row),
               }));
             setTools(cleaned);
           },
@@ -95,7 +109,7 @@ export default function App() {
         ${tool.Citation}
       `.toLowerCase();
 
-      return text.includes(query.toLowerCase()) && (lane === "All" || tool.Lane === lane);
+      return text.includes(query.toLowerCase()) && (lane === "All" || (tool.Lanes || ["Other"]).includes(lane));
     });
   }, [tools, query, lane]);
 
@@ -157,7 +171,7 @@ export default function App() {
             <div className="nodes">
               {group.tools.slice(0, 25).map((tool, index) => (
                 <button
-                  className={`node ${tool.Lane.toLowerCase()}`}
+                  className={`node ${((lane !== "All" && (tool.Lanes || []).includes(lane)) ? lane : (tool.Lanes || ["Other"])[0]).toLowerCase()}`}
                   key={`${tool.Name}-${index}`}
                   onClick={() => setSelected(tool)}
                 >
@@ -181,7 +195,7 @@ export default function App() {
           </button>
 
           <h2>{selected.Name}</h2>
-          <p className="badge">{selected.Lane}</p>
+          <p className="badge">{(selected.Lanes || ["Other"]).join(" • ")}</p>
 
           <p>{selected.Description}</p>
 

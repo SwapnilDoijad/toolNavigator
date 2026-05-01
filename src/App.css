@@ -128,16 +128,12 @@ input {
   opacity: 0.8;
 }
 
-.general {
-  background: #86efac;
+.bacteria {
+  background: #f9a8d4;
 }
 
 .phage {
   background: #67e8f9;
-}
-
-.bacteria {
-  background: #f9a8d4;
 }
 
 .metagenome {
@@ -146,6 +142,14 @@ input {
 
 .microbiome {
   background: #fde68a;
+}
+
+.virome {
+  background: #93c5fd;
+}
+
+.other {
+  background: #86efac;
 }
 
 .more {
@@ -252,10 +256,12 @@ a {
 }
 
 .lane-card.lane-general,
-.lane-card.lane-phage,
 .lane-card.lane-bacteria,
+.lane-card.lane-phage,
 .lane-card.lane-metagenome,
-.lane-card.lane-microbiome {
+.lane-card.lane-microbiome,
+.lane-card.lane-virome,
+.lane-card.lane-other {
   color: #0f172a;
 }
 

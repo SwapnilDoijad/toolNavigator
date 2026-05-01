@@ -368,6 +368,8 @@ export default function App() {
             </a>
           )}
 
+          {selectedTool.Reference && <p className="reference">{selectedTool.Reference}</p>}
+
           {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}
         </aside>
       )}

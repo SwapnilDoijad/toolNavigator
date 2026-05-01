@@ -44,6 +44,21 @@ function getFunctionalCategory(tool) {
   return tool.FunctionalCategory || tool.Usage || "";
 }
 
+function getToolSearchText(tool) {
+  return `
+    ${tool.Name}
+    ${tool.Version}
+    ${tool.Status}
+    ${tool.Category}
+    ${getFunctionalCategory(tool)}
+    ${tool.Description}
+    ${tool.Installed_on}
+    ${tool.Call_tool}
+    ${tool.URL}
+    ${tool.Citation}
+  `.toLowerCase();
+}
+
 function detectStage(tool) {
   const text = `${tool.Category} ${getFunctionalCategory(tool)} ${tool.Description}`.toLowerCase();
 
@@ -77,7 +92,8 @@ export default function App() {
   const [tools, setTools] = useState([]);
   const [query, setQuery] = useState("");
   const [lane, setLane] = useState("All");
-  const [selected, setSelected] = useState(null);
+  const [selectedToolKey, setSelectedToolKey] = useState(null);
+  const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
 
   useEffect(() => {
     fetch(getSheetCsvUrl(), { cache: "no-store" })
@@ -103,29 +119,62 @@ export default function App() {
 
   const lanes = LANES;
 
-  const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
-      const text = `
-        ${tool.Name}
-        ${tool.Version}
-        ${tool.Status}
-        ${tool.Category}
-        ${getFunctionalCategory(tool)}
-        ${tool.Description}
-        ${tool.Installed_on}
-        ${tool.Call_tool}
-        ${tool.URL}
-        ${tool.Citation}
-      `.toLowerCase();
+  const toolGroups = useMemo(() => {
+    const groups = new Map();
 
-      return text.includes(query.toLowerCase()) && (lane === "All" || (tool.Lanes || ["Other"]).includes(lane));
+    tools.forEach((tool) => {
+      const key = (tool.Name || "").trim().toLowerCase();
+      if (!key) return;
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          name: (tool.Name || "NA").trim(),
+          stage: tool.Stage || "Other",
+          versions: [tool],
+          lanes: new Set(tool.Lanes || ["Other"]),
+          searchText: getToolSearchText(tool),
+        });
+        return;
+      }
+
+      const existing = groups.get(key);
+      existing.versions.push(tool);
+      (tool.Lanes || ["Other"]).forEach((item) => existing.lanes.add(item));
+      existing.searchText += ` ${getToolSearchText(tool)}`;
     });
-  }, [tools, query, lane]);
+
+    return Array.from(groups.values()).map((group) => ({
+      ...group,
+      lanes: [...group.lanes],
+    }));
+  }, [tools]);
+
+  const filteredGroups = useMemo(() => {
+    const loweredQuery = query.toLowerCase();
+
+    return toolGroups.filter((group) => {
+      return group.searchText.includes(loweredQuery) && (lane === "All" || group.lanes.includes(lane));
+    });
+  }, [toolGroups, query, lane]);
 
   const grouped = STAGES.map((stage) => ({
     stage,
-    tools: filteredTools.filter((tool) => tool.Stage === stage),
+    tools: filteredGroups.filter((group) => group.stage === stage),
   }));
+
+  const selectedGroup = useMemo(() => {
+    if (!selectedToolKey) return null;
+    return toolGroups.find((group) => group.key === selectedToolKey) || null;
+  }, [toolGroups, selectedToolKey]);
+
+  const selectedTool = selectedGroup ? selectedGroup.versions[selectedVersionIndex] || selectedGroup.versions[0] : null;
+
+  useEffect(() => {
+    if (selectedGroup && selectedVersionIndex >= selectedGroup.versions.length) {
+      setSelectedVersionIndex(0);
+    }
+  }, [selectedGroup, selectedVersionIndex]);
 
   return (
     <main className="app">
@@ -140,7 +189,7 @@ export default function App() {
         </div>
 
         <div className="summary">
-          <strong>{tools.length}</strong>
+          <strong>{toolGroups.length}</strong>
           <span>tools</span>
         </div>
       </header>
@@ -178,14 +227,17 @@ export default function App() {
             <h2>{group.stage}</h2>
 
             <div className="nodes">
-              {group.tools.slice(0, 25).map((tool, index) => (
+              {group.tools.slice(0, 25).map((toolGroup) => (
                 <button
-                  className={`node ${((lane !== "All" && (tool.Lanes || []).includes(lane)) ? lane : (tool.Lanes || ["Other"])[0]).toLowerCase()}`}
-                  key={`${tool.Name}-${index}`}
-                  onClick={() => setSelected(tool)}
+                  className={`node ${((lane !== "All" && toolGroup.lanes.includes(lane)) ? lane : toolGroup.lanes[0] || "Other").toLowerCase()}`}
+                  key={toolGroup.key}
+                  onClick={() => {
+                    setSelectedToolKey(toolGroup.key);
+                    setSelectedVersionIndex(0);
+                  }}
                 >
-                  <strong>{tool.Name}</strong>
-                  <small>{getFunctionalCategory(tool) || tool.Category}</small>
+                  <strong>{toolGroup.name}</strong>
+                  <small>{getFunctionalCategory(toolGroup.versions[0]) || toolGroup.versions[0].Category}</small>
                 </button>
               ))}
 
@@ -197,48 +249,72 @@ export default function App() {
         ))}
       </section>
 
-      {selected && (
+      {selectedTool && selectedGroup && (
         <aside className="drawer">
-          <button className="close" onClick={() => setSelected(null)}>
+          <button
+            className="close"
+            onClick={() => {
+              setSelectedToolKey(null);
+              setSelectedVersionIndex(0);
+            }}
+          >
             ×
           </button>
 
-          <h2>{selected.Name}</h2>
-          <p className="badge">{(selected.Lanes || ["Other"]).join(" • ")}</p>
+          <h2>{selectedGroup.name}</h2>
+          <p className="badge">{(selectedTool.Lanes || ["Other"]).join(" • ")}</p>
 
-          <p>{selected.Description}</p>
-
-          <dl>
-            <dt>Version</dt>
-            <dd>{selected.Version || "NA"}</dd>
-
-            <dt>Status</dt>
-            <dd>{selected.Status || "NA"}</dd>
-
-            <dt>Category</dt>
-            <dd>{selected.Category || "NA"}</dd>
-
-            <dt>Functional category</dt>
-            <dd>{getFunctionalCategory(selected) || "NA"}</dd>
-
-            <dt>Installed on</dt>
-            <dd>{selected.Installed_on || "NA"}</dd>
-          </dl>
-
-          {selected.Call_tool && (
+          {selectedGroup.versions.length > 1 && (
             <>
-              <h3>Draco command</h3>
-              <pre>{selected.Call_tool}</pre>
+              <h3>Versions</h3>
+              <div className="version-list">
+                {selectedGroup.versions.map((tool, index) => (
+                  <button
+                    type="button"
+                    className={`version-chip ${selectedVersionIndex === index ? "active" : ""}`}
+                    key={`${selectedGroup.key}-${tool.Version || "NA"}-${index}`}
+                    onClick={() => setSelectedVersionIndex(index)}
+                  >
+                    {tool.Version || `Version ${index + 1}`}
+                  </button>
+                ))}
+              </div>
             </>
           )}
 
-          {selected.URL && (
-            <a href={selected.URL} target="_blank" rel="noreferrer">
+          <p>{selectedTool.Description}</p>
+
+          <dl>
+            <dt>Version</dt>
+            <dd>{selectedTool.Version || "NA"}</dd>
+
+            <dt>Status</dt>
+            <dd>{selectedTool.Status || "NA"}</dd>
+
+            <dt>Category</dt>
+            <dd>{selectedTool.Category || "NA"}</dd>
+
+            <dt>Functional category</dt>
+            <dd>{getFunctionalCategory(selectedTool) || "NA"}</dd>
+
+            <dt>Installed on</dt>
+            <dd>{selectedTool.Installed_on || "NA"}</dd>
+          </dl>
+
+          {selectedTool.Call_tool && (
+            <>
+              <h3>Draco command</h3>
+              <pre>{selectedTool.Call_tool}</pre>
+            </>
+          )}
+
+          {selectedTool.URL && (
+            <a href={selectedTool.URL} target="_blank" rel="noreferrer">
               Open tool website →
             </a>
           )}
 
-          {selected.Citation && <p className="citation">{selected.Citation}</p>}
+          {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}
         </aside>
       )}
     </main>

@@ -193,6 +193,28 @@ input {
   font-weight: 700;
 }
 
+.version-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 16px;
+}
+
+.version-chip {
+  background: #111827;
+  border: 1px solid #334155;
+  color: #e5e7eb;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.version-chip.active {
+  border-color: #67e8f9;
+  color: #67e8f9;
+}
+
 dl {
   display: grid;
   grid-template-columns: 120px 1fr;

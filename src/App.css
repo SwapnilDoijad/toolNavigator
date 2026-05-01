@@ -178,7 +178,25 @@ input {
   background: #020617;
   border-left: 1px solid #334155;
   padding: 28px;
+  font-size: 14px;
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+}
+
+.drawer h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.drawer h3 {
+  font-size: 16px;
+  margin: 18px 0 10px;
+}
+
+.drawer p,
+.drawer dd,
+.drawer a,
+.drawer pre {
+  font-size: 14px;
 }
 
 .close {

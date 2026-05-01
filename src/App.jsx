@@ -228,7 +228,7 @@ export default function App() {
   };
 
   return (
-    <main className={`app ${selectedTool ? "drawer-open" : ""}`}>
+    <main className="app">
       <header className="topbar">
         <div className="hero-copy">
           <p className="eyebrow">VEO Microbial Bioinformatics Tools</p>

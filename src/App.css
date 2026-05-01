@@ -14,6 +14,10 @@ body {
   padding: 32px;
 }
 
+.app.drawer-open {
+  padding-right: 500px;
+}
+
 .topbar {
   position: relative;
   display: flex;
@@ -426,14 +430,20 @@ a {
 }
 
 .lane-card.no-icon strong {
-  width: auto;
-  padding: 0 18px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 12px;
   font-size: 30px;
+  overflow-wrap: anywhere;
   background: none;
   border-radius: 0;
 }
 
 @media (max-width: 900px) {
+  .app.drawer-open {
+    padding-right: 32px;
+  }
+
   .lane-cards {
     grid-template-columns: repeat(2, 1fr);
   }

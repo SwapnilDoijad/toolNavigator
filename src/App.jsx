@@ -41,7 +41,11 @@ function getSheetCsvUrl() {
 }
 
 function getFunctionalCategory(tool) {
-  return tool.FunctionalCategory || tool.Usage || "";
+  return tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
+}
+
+function getCategory(tool) {
+  return tool.Category || tool.Domain_Category || "";
 }
 
 function copyText(text) {
@@ -72,7 +76,7 @@ function getToolSearchText(tool) {
     ${tool.Name}
     ${tool.Version}
     ${tool.Status}
-    ${tool.Category}
+    ${getCategory(tool)}
     ${getFunctionalCategory(tool)}
     ${tool.Description}
     ${tool.Installed_on}
@@ -83,7 +87,7 @@ function getToolSearchText(tool) {
 }
 
 function detectStage(tool) {
-  const text = `${tool.Category} ${getFunctionalCategory(tool)} ${tool.Description}`.toLowerCase();
+  const text = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${tool.Description}`.toLowerCase();
 
   if (text.includes("quality") || text.includes("qc") || text.includes("trim")) return "QC";
   if (text.includes("assembl")) return "Assembly";
@@ -97,7 +101,7 @@ function detectStage(tool) {
 }
 
 function detectLane(tool) {
-  const categoryParts = (tool.Category || "")
+  const categoryParts = getCategory(tool)
     .split("+")
     .map((part) => part.trim().toLowerCase())
     .filter(Boolean);
@@ -163,7 +167,6 @@ export default function App() {
       }
 
       const existing = groups.get(key);
-      existing.versions.push(tool);
       (tool.Lanes || ["Other"]).forEach((item) => existing.lanes.add(item));
       existing.searchText += ` ${getToolSearchText(tool)}`;
     });
@@ -329,7 +332,7 @@ export default function App() {
             <dd>{selectedTool.Status || "NA"}</dd>
 
             <dt>Category</dt>
-            <dd>{selectedTool.Category || "NA"}</dd>
+            <dd>{getCategory(selectedTool) || "NA"}</dd>
 
             <dt>Functional category</dt>
             <dd>{getFunctionalCategory(selectedTool) || "NA"}</dd>

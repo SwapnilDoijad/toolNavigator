@@ -40,8 +40,12 @@ function getSheetCsvUrl() {
   return url.toString();
 }
 
+function getFunctionalCategory(tool) {
+  return tool.FunctionalCategory || tool.Usage || "";
+}
+
 function detectStage(tool) {
-  const text = `${tool.Category} ${tool.Usage} ${tool.Description}`.toLowerCase();
+  const text = `${tool.Category} ${getFunctionalCategory(tool)} ${tool.Description}`.toLowerCase();
 
   if (text.includes("quality") || text.includes("qc") || text.includes("trim")) return "QC";
   if (text.includes("assembl")) return "Assembly";
@@ -106,7 +110,7 @@ export default function App() {
         ${tool.Version}
         ${tool.Status}
         ${tool.Category}
-        ${tool.Usage}
+        ${getFunctionalCategory(tool)}
         ${tool.Description}
         ${tool.Installed_on}
         ${tool.Call_tool}
@@ -156,7 +160,7 @@ export default function App() {
 
       <section className="controls">
         <input
-          placeholder="Search tools, usage, category, command..."
+          placeholder="Search tools, functional category, category, command..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -181,7 +185,7 @@ export default function App() {
                   onClick={() => setSelected(tool)}
                 >
                   <strong>{tool.Name}</strong>
-                  <small>{tool.Usage || tool.Category}</small>
+                  <small>{getFunctionalCategory(tool) || tool.Category}</small>
                 </button>
               ))}
 
@@ -214,8 +218,8 @@ export default function App() {
             <dt>Category</dt>
             <dd>{selected.Category || "NA"}</dd>
 
-            <dt>Usage</dt>
-            <dd>{selected.Usage || "NA"}</dd>
+            <dt>Functional category</dt>
+            <dd>{getFunctionalCategory(selected) || "NA"}</dd>
 
             <dt>Installed on</dt>
             <dd>{selected.Installed_on || "NA"}</dd>

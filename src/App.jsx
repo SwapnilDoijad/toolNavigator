@@ -369,10 +369,9 @@ export default function App() {
           )}
 
           {selectedTool.Reference && (
-            <>
-              <h3>Reference</h3>
-              <p className="reference">{selectedTool.Reference}</p>
-            </>
+            <a href={selectedTool.Reference} target="_blank" rel="noreferrer" className="reference">
+              Open reference →
+            </a>
           )}
 
           {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}

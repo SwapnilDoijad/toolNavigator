@@ -44,6 +44,29 @@ function getFunctionalCategory(tool) {
   return tool.FunctionalCategory || tool.Usage || "";
 }
 
+function copyText(text) {
+  if (!text) return Promise.resolve(false);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard
+      .writeText(text)
+      .then(() => true)
+      .catch(() => false);
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  document.body.removeChild(textarea);
+  return Promise.resolve(copied);
+}
+
 function getToolSearchText(tool) {
   return `
     ${tool.Name}
@@ -94,6 +117,7 @@ export default function App() {
   const [lane, setLane] = useState("All");
   const [selectedToolKey, setSelectedToolKey] = useState(null);
   const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
+  const [commandCopied, setCommandCopied] = useState(false);
 
   useEffect(() => {
     fetch(getSheetCsvUrl(), { cache: "no-store" })
@@ -175,6 +199,19 @@ export default function App() {
       setSelectedVersionIndex(0);
     }
   }, [selectedGroup, selectedVersionIndex]);
+
+  useEffect(() => {
+    setCommandCopied(false);
+  }, [selectedToolKey, selectedVersionIndex]);
+
+  const handleCopyCommand = async () => {
+    if (!selectedTool || !selectedTool.Call_tool) return;
+    const copied = await copyText(selectedTool.Call_tool);
+    if (!copied) return;
+
+    setCommandCopied(true);
+    window.setTimeout(() => setCommandCopied(false), 1800);
+  };
 
   return (
     <main className="app">
@@ -303,7 +340,12 @@ export default function App() {
 
           {selectedTool.Call_tool && (
             <>
-              <h3>Draco command</h3>
+              <div className="command-header">
+                <h3>Draco command</h3>
+                <button type="button" className="copy-command" onClick={handleCopyCommand}>
+                  {commandCopied ? "Copied" : "Copy"} {commandCopied ? "✓" : "📋"}
+                </button>
+              </div>
               <pre>{selectedTool.Call_tool}</pre>
             </>
           )}

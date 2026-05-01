@@ -34,6 +34,12 @@ const CATEGORY_MAP = {
   other: "Other",
 };
 
+function getSheetCsvUrl() {
+  const url = new URL(GOOGLE_SHEET_CSV_URL);
+  url.searchParams.set("ts", Date.now().toString());
+  return url.toString();
+}
+
 function detectStage(tool) {
   const text = `${tool.Category} ${tool.Usage} ${tool.Description}`.toLowerCase();
 
@@ -70,7 +76,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    fetch(GOOGLE_SHEET_CSV_URL)
+    fetch(getSheetCsvUrl(), { cache: "no-store" })
       .then((res) => res.text())
       .then((csv) => {
         Papa.parse(csv, {

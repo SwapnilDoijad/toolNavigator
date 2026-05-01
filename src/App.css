@@ -235,6 +235,10 @@ dd {
   justify-self: start;
 }
 
+.command-box {
+  position: relative;
+}
+
 pre {
   background: #111827;
   border: 1px solid #334155;
@@ -244,14 +248,15 @@ pre {
   white-space: pre-wrap;
 }
 
-.command-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.command-pre {
+  padding-top: 52px;
 }
 
 .copy-command {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
   background: #111827;
   color: #e5e7eb;
   border: 1px solid #334155;

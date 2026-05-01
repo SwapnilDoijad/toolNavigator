@@ -340,13 +340,13 @@ export default function App() {
 
           {selectedTool.Call_tool && (
             <>
-              <div className="command-header">
-                <h3>Draco command</h3>
+              <h3>Draco command</h3>
+              <div className="command-box">
                 <button type="button" className="copy-command" onClick={handleCopyCommand}>
                   {commandCopied ? "Copied" : "Copy"} {commandCopied ? "✓" : "📋"}
                 </button>
+                <pre className="command-pre">{selectedTool.Call_tool}</pre>
               </div>
-              <pre>{selectedTool.Call_tool}</pre>
             </>
           )}
 

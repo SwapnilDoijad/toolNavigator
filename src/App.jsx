@@ -17,7 +17,7 @@ const STAGES = [
 ];
 
 const LANES = [
-  { name: "All", icon: "/favicon.svg", label: "All tools" },
+  { name: "All", icon: null, label: "All tools" },
   { name: "Bacteria", icon: "/bacteria.png", label: "Bacteria" },
   { name: "Phage", icon: "/phage.png", label: "Phage" },
   { name: "Metagenome", icon: "/metagenome.png", label: "Metagenome" },
@@ -241,7 +241,7 @@ export default function App() {
             className={`lane-card lane-${item.name.toLowerCase()} ${lane === item.name ? "active" : ""}`}
             onClick={() => setLane(item.name)}
           >
-            <img src={item.icon} alt={item.label} className="lane-icon" />
+            {item.icon && <img src={item.icon} alt={item.label} className="lane-icon" />}
             <strong>{item.label}</strong>
           </button>
         ))}

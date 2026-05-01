@@ -220,11 +220,10 @@ export default function App() {
     <main className="app">
       <header className="topbar">
         <div>
-          <p className="eyebrow">VEO Bioinformatics Tool Atlas</p>
-          <h1>Workflow-based interactive tool navigator</h1>
+          <p className="eyebrow">VEO Microbial Bioinformatics Tools</p>
+          <h1>Interactive tool navigator</h1>
           <p>
-            Tools are loaded automatically from Google Sheets and organised into
-            workflow stages.
+            click to choose the best tool for your needs, explore details and get the command to run it with Draco.
           </p>
         </div>
 

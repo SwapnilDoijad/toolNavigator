@@ -356,10 +356,10 @@ a {
 
 .lane-icon {
   display: block;
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .lane-card strong {

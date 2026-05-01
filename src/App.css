@@ -335,8 +335,14 @@ a {
 .lane-card.lane-metagenome,
 .lane-card.lane-microbiome,
 .lane-card.lane-virome,
+.lane-card.lane-all,
 .lane-card.lane-other {
   color: #0f172a;
+}
+
+.lane-card.lane-all {
+  background: #e2e8f0;
+  border-color: #e2e8f0;
 }
 
 .lane-card.lane-general {
@@ -394,6 +400,19 @@ a {
   width: 100%;
   background: linear-gradient(transparent, rgba(0,0,0,0.55));
   border-radius: 0 0 22px 22px;
+}
+
+.lane-card.no-icon {
+  align-items: center;
+  justify-content: center;
+}
+
+.lane-card.no-icon strong {
+  width: auto;
+  padding: 0 18px;
+  font-size: 30px;
+  background: none;
+  border-radius: 0;
 }
 
 @media (max-width: 900px) {

@@ -17,12 +17,12 @@ const STAGES = [
 ];
 
 const LANES = [
-  { name: "All", icon: null, label: "All tools" },
   { name: "Bacteria", icon: "/bacteria.png", label: "Bacteria" },
   { name: "Phage", icon: "/phage.png", label: "Phage" },
   { name: "Metagenome", icon: "/metagenome.png", label: "Metagenome" },
   { name: "Microbiome", icon: "/microbiome.png", label: "Microbiome" },
   { name: "Virome", icon: "/virome.png", label: "Virome" },
+  { name: "All", icon: null, label: "All tools" },
 ];
 
 const CATEGORY_MAP = {
@@ -247,7 +247,7 @@ export default function App() {
         {lanes.map((item) => (
           <button
             key={item.name}
-            className={`lane-card lane-${item.name.toLowerCase()} ${lane === item.name ? "active" : ""}`}
+            className={`lane-card lane-${item.name.toLowerCase()} ${item.icon ? "" : "no-icon"} ${lane === item.name ? "active" : ""}`}
             onClick={() => setLane(item.name)}
           >
             {item.icon && <img src={item.icon} alt={item.label} className="lane-icon" />}

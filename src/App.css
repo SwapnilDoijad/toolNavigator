@@ -15,12 +15,17 @@ body {
 }
 
 .topbar {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
+  justify-content: center;
   margin-bottom: 24px;
+  padding-top: 16px;
+  min-height: 152px;
+}
+
+.hero-copy {
+  width: min(100%, 760px);
+  text-align: center;
 }
 
 .eyebrow {
@@ -40,6 +45,9 @@ h1 {
 }
 
 .summary {
+  position: absolute;
+  top: 0;
+  right: 0;
   background: #111827;
   border: 1px solid #26324a;
   border-radius: 20px;
@@ -395,13 +403,28 @@ a {
   line-height: 1.22;
 }
 
-.topbar > div > p:not(.eyebrow) {
-  margin: 0 auto;
+.hero-copy > p:not(.eyebrow) {
   margin: 0;
   line-height: 1.8;
   max-width: 64ch;
+  margin-inline: auto;
 }
 
 .eyebrow {
   margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-height: 0;
+    padding-top: 0;
+  }
+
+  .summary {
+    position: static;
+  }
 }

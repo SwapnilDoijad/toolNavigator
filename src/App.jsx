@@ -219,7 +219,7 @@ export default function App() {
   return (
     <main className="app">
       <header className="topbar">
-        <div>
+        <div className="hero-copy">
           <p className="eyebrow">VEO Microbial Bioinformatics Tools</p>
           <h1>Interactive tool navigator</h1>
           <p>

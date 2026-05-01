@@ -48,6 +48,16 @@ function getCategory(tool) {
   return tool.Category || tool.Domain_Category || "";
 }
 
+function getDisplayStatus(tool) {
+  const status = tool.Status || "";
+  const statusParts = status
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return statusParts[1] || statusParts[0] || "";
+}
+
 function copyText(text) {
   if (!text) return Promise.resolve(false);
 
@@ -328,12 +338,12 @@ export default function App() {
             <dd>{selectedTool.Version || "NA"}</dd>
 
             <dt>Status</dt>
-            <dd>{selectedTool.Status || "NA"}</dd>
+            <dd>{getDisplayStatus(selectedTool) || "NA"}</dd>
 
             <dt>Category</dt>
             <dd>{getCategory(selectedTool) || "NA"}</dd>
 
-            <dt>Functional category</dt>
+            <dt>Function</dt>
             <dd>{getFunctionalCategory(selectedTool) || "NA"}</dd>
 
             <dt>Installed on</dt>

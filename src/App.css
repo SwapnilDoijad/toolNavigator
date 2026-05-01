@@ -370,11 +370,12 @@ a {
 }
 
 .lane-card strong {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 800;
   line-height: 1.2;
   position: relative;
   z-index: 1;
-  padding: 4px 8px 8px;
+  padding: 4px 8px 10px;
   display: block;
   width: 100%;
   background: linear-gradient(transparent, rgba(0,0,0,0.55));

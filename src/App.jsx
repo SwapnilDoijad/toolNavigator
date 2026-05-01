@@ -177,6 +177,7 @@ export default function App() {
       }
 
       const existing = groups.get(key);
+      existing.versions.push(tool);
       (tool.Lanes || ["Other"]).forEach((item) => existing.lanes.add(item));
       existing.searchText += ` ${getToolSearchText(tool)}`;
     });

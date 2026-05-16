@@ -275,6 +275,7 @@ pre {
   padding: 14px;
   overflow-x: auto;
   white-space: pre-wrap;
+  text-align: left;
 }
 
 .command-pre {

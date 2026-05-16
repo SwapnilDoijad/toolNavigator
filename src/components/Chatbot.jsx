@@ -323,7 +323,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         <div className="chatbot-window">
           {/* Header */}
           <div className="chatbot-header">
-            <h3>AI Assistant</h3>
+            <h3>How can I assist you?</h3>
             <div className="chatbot-controls">
               <button
                 className="chatbot-clear-btn"

@@ -81,6 +81,15 @@ function getTypicalOutputs(tool) {
   return getFirstValue(tool, ["Typical_outputs", "Typical outputs", "TypicalOutputs"]);
 }
 
+function splitSemicolonLines(value) {
+  if (!value) return [];
+
+  return value
+    .split(";")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function getCategory(tool) {
   return tool.Category || tool.Domain_Category || "";
 }
@@ -409,7 +418,12 @@ export default function App() {
 
           <>
             <h3>Commands</h3>
-            <pre className="detail-pre">{getCommands(selectedTool) || "NA"}</pre>
+            <pre className="detail-pre">
+              {(() => {
+                const commands = splitSemicolonLines(getCommands(selectedTool));
+                return commands.length ? commands.join("\n") : "NA";
+              })()}
+            </pre>
           </>
 
           <>

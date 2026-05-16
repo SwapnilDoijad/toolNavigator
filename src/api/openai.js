@@ -7,13 +7,18 @@
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const CLIENT_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
-async function callViaServerProxy(conversationHistory, userMessage) {
+async function callViaServerProxy(conversationHistory, userMessage, context = {}) {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ conversationHistory, userMessage }),
+    body: JSON.stringify({
+      conversationHistory,
+      userMessage,
+      toolsContext: context.toolsContext || [],
+      totalToolCount: context.totalToolCount || 0,
+    }),
   });
 
   if (!response.ok) {
@@ -42,7 +47,7 @@ async function callDirectFromClient(messages) {
     body: JSON.stringify({
       model: "gpt-3.5-turbo",
       messages,
-      temperature: 0.7,
+      temperature: 0.4,
       max_tokens: 500,
     }),
   });
@@ -61,15 +66,23 @@ async function callDirectFromClient(messages) {
  * Calls OpenAI Chat API with conversation context
  * @param {Array} conversationHistory - Array of previous messages with role and content
  * @param {string} userMessage - The current user message
+ * @param {Object} context - Additional context from sheet data
  * @returns {Promise<string>} - The AI response
  */
-export async function callOpenAI(conversationHistory, userMessage) {
+export async function callOpenAI(conversationHistory, userMessage, context = {}) {
   try {
+    const toolsContext = context.toolsContext || [];
+    const totalToolCount = context.totalToolCount || 0;
+
     const messages = [
       {
         role: "system",
         content:
-          "You are a helpful AI assistant for a bioinformatics tools navigation application. You help users understand and navigate various scientific tools and workflows. Be concise, helpful, and professional.",
+          "You are a helpful AI assistant for a bioinformatics tools navigation application. Always prioritize the provided tool catalog context first. If relevant information exists in the catalog, answer using only catalog information. If the catalog does not contain enough information, clearly state that it is not found in the sheet and then provide a general answer.",
+      },
+      {
+        role: "system",
+        content: `Catalog context summary: total tools loaded from Google Sheet = ${totalToolCount}. Relevant catalog entries for this query = ${toolsContext.length}. Catalog entries JSON: ${JSON.stringify(toolsContext)}`,
       },
       ...conversationHistory,
       {
@@ -79,7 +92,10 @@ export async function callOpenAI(conversationHistory, userMessage) {
     ];
 
     try {
-      return await callViaServerProxy(conversationHistory, userMessage);
+      return await callViaServerProxy(conversationHistory, userMessage, {
+        toolsContext,
+        totalToolCount,
+      });
     } catch (proxyError) {
       // In local Vite dev, /api/chat may not exist. Fallback to client-side key.
       const canFallbackToClient =

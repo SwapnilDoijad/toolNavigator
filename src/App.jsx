@@ -457,7 +457,7 @@ export default function App() {
           {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}
         </aside>
       )}
-      <Chatbot />
+      <Chatbot tools={tools} />
     </main>
   );
 }

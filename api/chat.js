@@ -16,7 +16,13 @@ export default async function handler(req, res) {
       .json({ error: "Server API key is missing. Set OPENAI_API_KEY in Vercel." });
   }
 
-  const { conversationHistory = [], userMessage = "" } = req.body || {};
+  const {
+    conversationHistory = [],
+    userMessage = "",
+    toolsContext = [],
+    totalToolCount = 0,
+  } = req.body || {};
+
   if (!userMessage || typeof userMessage !== "string") {
     return res.status(400).json({ error: "userMessage is required" });
   }
@@ -25,7 +31,11 @@ export default async function handler(req, res) {
     {
       role: "system",
       content:
-        "You are a helpful AI assistant for a bioinformatics tools navigation application. You help users understand and navigate various scientific tools and workflows. Be concise, helpful, and professional.",
+        "You are a helpful AI assistant for a bioinformatics tools navigation application. Always prioritize the provided tool catalog context first. If relevant information exists in the catalog, answer using only catalog information. If the catalog does not contain enough information, clearly state that it is not found in the sheet and then provide a general answer.",
+    },
+    {
+      role: "system",
+      content: `Catalog context summary: total tools loaded from Google Sheet = ${totalToolCount}. Relevant catalog entries for this query = ${Array.isArray(toolsContext) ? toolsContext.length : 0}. Catalog entries JSON: ${JSON.stringify(Array.isArray(toolsContext) ? toolsContext : [])}`,
     },
     ...conversationHistory,
     {
@@ -44,7 +54,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
         messages,
-        temperature: 0.7,
+        temperature: 0.4,
         max_tokens: 500,
       }),
     });

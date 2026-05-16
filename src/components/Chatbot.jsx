@@ -2,7 +2,60 @@ import { useState, useRef, useEffect } from "react";
 import { callOpenAI } from "../api/openai";
 import "./Chatbot.css";
 
-export default function Chatbot() {
+function getFunctionalCategory(tool) {
+  return tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
+}
+
+function getCategory(tool) {
+  return tool.Category || tool.Domain_Category || "";
+}
+
+function getCommands(tool) {
+  return tool.Commands || tool.Command || "";
+}
+
+function getDracoCommand(tool) {
+  return tool.Call_tool || tool.Draco_command || "";
+}
+
+function buildToolsContext(tools, userInput) {
+  if (!Array.isArray(tools) || tools.length === 0) return [];
+
+  const tokens = String(userInput || "")
+    .toLowerCase()
+    .split(/\W+/)
+    .filter((token) => token.length > 2);
+
+  const scored = tools.map((tool) => {
+    const haystack = `${tool.Name || ""} ${tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)}`.toLowerCase();
+
+    const score = tokens.reduce((acc, token) => acc + (haystack.includes(token) ? 1 : 0), 0);
+
+    return {
+      score,
+      item: {
+        name: tool.Name || "NA",
+        version: tool.Version || "NA",
+        category: getCategory(tool) || "NA",
+        functionalCategory: getFunctionalCategory(tool) || "NA",
+        description: tool.Description || "NA",
+        commands: getCommands(tool) || "NA",
+        dracoCommand: getDracoCommand(tool) || "NA",
+        url: tool.URL || "",
+      },
+    };
+  });
+
+  const withMatches = scored.filter((entry) => entry.score > 0);
+  const source = withMatches.length > 0 ? withMatches : scored;
+
+  return source
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 12)
+    .map((entry) => entry.item);
+}
+
+export default function Chatbot({ tools = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -41,13 +94,19 @@ export default function Chatbot() {
     setError(null);
 
     try {
-      // Call OpenAI API
+      const toolsContext = buildToolsContext(tools, input);
+
+      // Call OpenAI API with sheet-first context
       const response = await callOpenAI(
         messages.map((msg) => ({
           role: msg.sender === "user" ? "user" : "assistant",
           content: msg.text,
         })),
-        input
+        input,
+        {
+          toolsContext,
+          totalToolCount: tools.length,
+        }
       );
 
       const botMessage = {

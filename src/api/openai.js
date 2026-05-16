@@ -21,7 +21,7 @@ const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 function validateApiKey() {
   if (!API_KEY) {
     throw new Error(
-      "OpenAI API key is not configured. Please add VITE_OPENAI_API_KEY to your .env.local file."
+      "OpenAI API key is not configured. Local: add VITE_OPENAI_API_KEY to .env.local and restart the dev server. Vercel: set VITE_OPENAI_API_KEY in Project Settings > Environment Variables and redeploy."
     );
   }
 }

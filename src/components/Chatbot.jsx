@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { callOpenAI } from "../api/openai";
 import "./Chatbot.css";
 
@@ -15,7 +16,19 @@ function getCommands(tool) {
 }
 
 function getDracoCommand(tool) {
-  return tool.Call_tool || tool.Draco_command || "";
+  return tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "";
+}
+
+function getCommonUseCases(tool) {
+  return tool.Common_use_cases || tool["Common use cases"] || tool.CommonUseCases || tool.Use_cases || "";
+}
+
+function getTypicalInputs(tool) {
+  return tool.Typical_inputs || tool["Typical inputs"] || tool.TypicalInputs || "";
+}
+
+function getTypicalOutputs(tool) {
+  return tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
 
 function buildToolsContext(tools, userInput) {
@@ -39,8 +52,7 @@ function buildToolsContext(tools, userInput) {
         category: getCategory(tool) || "NA",
         functionalCategory: getFunctionalCategory(tool) || "NA",
         description: tool.Description || "NA",
-        commands: getCommands(tool) || "NA",
-        dracoCommand: getDracoCommand(tool) || "NA",
+        helpCommand: getDracoCommand(tool) || "NA",
         url: tool.URL || "",
       },
     };
@@ -180,7 +192,13 @@ export default function Chatbot({ tools = [] }) {
                 key={message.id}
                 className={`chatbot-message chatbot-message-${message.sender}`}
               >
-                <div className="chatbot-message-content">{message.text}</div>
+                <div className="chatbot-message-content">
+                  {message.sender === "bot" ? (
+                    <ReactMarkdown>{message.text}</ReactMarkdown>
+                  ) : (
+                    message.text
+                  )}
+                </div>
                 <span className="chatbot-message-time">
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",

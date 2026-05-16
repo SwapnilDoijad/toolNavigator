@@ -61,8 +61,12 @@ function getFirstValue(tool, keys) {
   return "";
 }
 
+function getDracoCommand(tool) {
+  return getFirstValue(tool, ["Call_tool", "Call tool", "Draco_command", "Draco command"]);
+}
+
 function getCommands(tool) {
-  return getFirstValue(tool, ["Commands", "Command", "Call_tool", "draco_command"]);
+  return getFirstValue(tool, ["Commands", "Command"]);
 }
 
 function getCommonUseCases(tool) {
@@ -124,6 +128,7 @@ function getToolSearchText(tool) {
     ${tool.Description}
     ${tool.Installed_on}
     ${tool.Call_tool}
+    ${getDracoCommand(tool)}
     ${getCommands(tool)}
     ${getCommonUseCases(tool)}
     ${getTypicalInputs(tool)}
@@ -256,7 +261,7 @@ export default function App() {
   }, [selectedToolKey, selectedVersionIndex]);
 
   const handleCopyCommand = async () => {
-    const command = selectedTool ? getCommands(selectedTool) : "";
+    const command = selectedTool ? getDracoCommand(selectedTool) : "";
     if (!command) return;
 
     const copied = await copyText(command);
@@ -390,17 +395,22 @@ export default function App() {
             <dd>{selectedTool.Installed_on || "NA"}</dd>
           </dl>
 
-          {getCommands(selectedTool) && (
+          {getDracoCommand(selectedTool) && (
             <>
               <h3>Draco command</h3>
               <div className="command-box">
                 <button type="button" className="copy-command" onClick={handleCopyCommand}>
                   {commandCopied ? "Copied" : "Copy"} {commandCopied ? "✓" : "📋"}
                 </button>
-                <pre className="command-pre">{getCommands(selectedTool)}</pre>
+                <pre className="command-pre">{getDracoCommand(selectedTool)}</pre>
               </div>
             </>
           )}
+
+          <>
+            <h3>Commands</h3>
+            <pre className="detail-pre">{getCommands(selectedTool) || "NA"}</pre>
+          </>
 
           <>
             <h3>Common use cases</h3>

@@ -397,7 +397,7 @@ export default function App() {
 
           {getDracoCommand(selectedTool) && (
             <>
-              <h3>Draco command</h3>
+              <h3>Help command</h3>
               <div className="command-box">
                 <button type="button" className="copy-command" onClick={handleCopyCommand}>
                   {commandCopied ? "Copied" : "Copy"} {commandCopied ? "✓" : "📋"}

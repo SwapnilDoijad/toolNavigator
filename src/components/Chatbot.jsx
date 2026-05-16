@@ -31,18 +31,146 @@ function getTypicalOutputs(tool) {
   return tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
 
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenize(text) {
+  return normalizeText(text)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2);
+}
+
+function stemToken(token) {
+  let stem = token;
+  const suffixes = ["ation", "ments", "ment", "ingly", "edly", "ingly", "ing", "ers", "er", "ies", "ied", "ed", "es", "s"];
+
+  for (const suffix of suffixes) {
+    if (stem.length > suffix.length + 2 && stem.endsWith(suffix)) {
+      if (suffix === "ies") {
+        return `${stem.slice(0, -3)}y`;
+      }
+      if (suffix === "ied") {
+        return `${stem.slice(0, -3)}y`;
+      }
+      return stem.slice(0, -suffix.length);
+    }
+  }
+
+  return stem;
+}
+
+function getTokenVariants(token) {
+  const variants = new Set([token]);
+  const stem = stemToken(token);
+
+  if (stem.length > 2) {
+    variants.add(stem);
+  }
+  if (token.length > 4) {
+    variants.add(token.slice(0, -1));
+  }
+
+  return [...variants];
+}
+
+function boundedEditDistance(a, b, maxDistance) {
+  if (Math.abs(a.length - b.length) > maxDistance) return maxDistance + 1;
+
+  let previous = new Array(b.length + 1);
+  let current = new Array(b.length + 1);
+
+  for (let j = 0; j <= b.length; j += 1) previous[j] = j;
+
+  for (let i = 1; i <= a.length; i += 1) {
+    current[0] = i;
+    let rowMin = current[0];
+
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+      if (current[j] < rowMin) rowMin = current[j];
+    }
+
+    if (rowMin > maxDistance) return maxDistance + 1;
+
+    const temp = previous;
+    previous = current;
+    current = temp;
+  }
+
+  return previous[b.length];
+}
+
+function bestVariantScore(variants, toolTokens, toolText) {
+  let best = 0;
+
+  for (const variant of variants) {
+    if (!variant) continue;
+
+    if (toolTokens.has(variant)) return 1;
+
+    if (variant.length > 4 && toolText.includes(variant)) {
+      if (best < 0.8) best = 0.8;
+    }
+
+    for (const token of toolTokens) {
+      if (token.startsWith(variant) || variant.startsWith(token)) {
+        if (Math.min(token.length, variant.length) >= 4 && best < 0.75) best = 0.75;
+      }
+
+      const maxDistance = variant.length >= 8 ? 2 : 1;
+      if (Math.abs(token.length - variant.length) <= maxDistance) {
+        const distance = boundedEditDistance(variant, token, maxDistance);
+        if (distance <= maxDistance) {
+          const fuzzyScore = distance === 1 ? 0.7 : 0.55;
+          if (fuzzyScore > best) best = fuzzyScore;
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
 function buildToolsContext(tools, userInput) {
   if (!Array.isArray(tools) || tools.length === 0) return [];
 
-  const tokens = String(userInput || "")
-    .toLowerCase()
-    .split(/\W+/)
-    .filter((token) => token.length > 2);
+  const queryText = normalizeText(userInput);
+  const queryTokens = [...new Set(tokenize(userInput))];
 
   const scored = tools.map((tool) => {
-    const haystack = `${tool.Name || ""} ${tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)}`.toLowerCase();
+    const searchableText = normalizeText(
+      `${tool.Name || ""} ${tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)} ${tool.URL || ""}`
+    );
+    const toolTokens = new Set(tokenize(searchableText));
+    const nameTokens = new Set(tokenize(tool.Name || ""));
 
-    const score = tokens.reduce((acc, token) => acc + (haystack.includes(token) ? 1 : 0), 0);
+    let score = 0;
+
+    for (const queryToken of queryTokens) {
+      const variants = getTokenVariants(queryToken);
+      const tokenScore = bestVariantScore(variants, toolTokens, searchableText);
+      score += tokenScore;
+
+      for (const variant of variants) {
+        if (nameTokens.has(variant)) {
+          score += 0.4;
+          break;
+        }
+      }
+    }
+
+    if (queryText && searchableText.includes(queryText)) {
+      score += 1.5;
+    }
 
     return {
       score,
@@ -58,7 +186,7 @@ function buildToolsContext(tools, userInput) {
     };
   });
 
-  const withMatches = scored.filter((entry) => entry.score > 0);
+  const withMatches = scored.filter((entry) => entry.score >= 1.2);
   const source = withMatches.length > 0 ? withMatches : scored;
 
   return source

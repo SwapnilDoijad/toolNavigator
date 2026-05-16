@@ -44,6 +44,39 @@ function getFunctionalCategory(tool) {
   return tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
 }
 
+function normalizeHeaderKey(key) {
+  return String(key || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function getFirstValue(tool, keys) {
+  const normalizedWanted = new Set(keys.map((key) => normalizeHeaderKey(key)));
+
+  for (const [key, value] of Object.entries(tool)) {
+    if (!normalizedWanted.has(normalizeHeaderKey(key))) continue;
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+
+  return "";
+}
+
+function getCommands(tool) {
+  return getFirstValue(tool, ["Commands", "Command", "Call_tool", "draco_command"]);
+}
+
+function getCommonUseCases(tool) {
+  return getFirstValue(tool, ["Common_use_cases", "Common use cases", "CommonUseCases", "Use_cases"]);
+}
+
+function getTypicalInputs(tool) {
+  return getFirstValue(tool, ["Typical_inputs", "Typical inputs", "TypicalInputs"]);
+}
+
+function getTypicalOutputs(tool) {
+  return getFirstValue(tool, ["Typical_outputs", "Typical outputs", "TypicalOutputs"]);
+}
+
 function getCategory(tool) {
   return tool.Category || tool.Domain_Category || "";
 }
@@ -91,6 +124,10 @@ function getToolSearchText(tool) {
     ${tool.Description}
     ${tool.Installed_on}
     ${tool.Call_tool}
+    ${getCommands(tool)}
+    ${getCommonUseCases(tool)}
+    ${getTypicalInputs(tool)}
+    ${getTypicalOutputs(tool)}
     ${tool.URL}
     ${tool.Citation}
   `.toLowerCase();
@@ -219,8 +256,10 @@ export default function App() {
   }, [selectedToolKey, selectedVersionIndex]);
 
   const handleCopyCommand = async () => {
-    if (!selectedTool || !selectedTool.Call_tool) return;
-    const copied = await copyText(selectedTool.Call_tool);
+    const command = selectedTool ? getCommands(selectedTool) : "";
+    if (!command) return;
+
+    const copied = await copyText(command);
     if (!copied) return;
 
     setCommandCopied(true);
@@ -351,17 +390,32 @@ export default function App() {
             <dd>{selectedTool.Installed_on || "NA"}</dd>
           </dl>
 
-          {selectedTool.Call_tool && (
+          {getCommands(selectedTool) && (
             <>
               <h3>Draco command</h3>
               <div className="command-box">
                 <button type="button" className="copy-command" onClick={handleCopyCommand}>
                   {commandCopied ? "Copied" : "Copy"} {commandCopied ? "✓" : "📋"}
                 </button>
-                <pre className="command-pre">{selectedTool.Call_tool}</pre>
+                <pre className="command-pre">{getCommands(selectedTool)}</pre>
               </div>
             </>
           )}
+
+          <>
+            <h3>Common use cases</h3>
+            <pre className="detail-pre">{getCommonUseCases(selectedTool) || "NA"}</pre>
+          </>
+
+          <>
+            <h3>Typical inputs</h3>
+            <pre className="detail-pre">{getTypicalInputs(selectedTool) || "NA"}</pre>
+          </>
+
+          <>
+            <h3>Typical outputs</h3>
+            <pre className="detail-pre">{getTypicalOutputs(selectedTool) || "NA"}</pre>
+          </>
 
           {selectedTool.URL && (
             <a href={selectedTool.URL} target="_blank" rel="noreferrer">

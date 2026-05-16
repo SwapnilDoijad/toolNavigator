@@ -280,6 +280,10 @@ pre {
   padding-top: 52px;
 }
 
+.detail-pre {
+  margin: 0 0 12px;
+}
+
 .copy-command {
   position: absolute;
   top: 12px;

@@ -31,6 +31,31 @@ function getTypicalOutputs(tool) {
   return tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
 
+function normalizeShortlistText(text) {
+  return ` ${String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()} `;
+}
+
+function extractShortlistedToolKeys(responseText, tools) {
+  const normalizedResponse = normalizeShortlistText(responseText);
+  const uniqueTools = new Map();
+
+  tools.forEach((tool) => {
+    const name = String(tool.Name || "").trim();
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (!uniqueTools.has(key)) uniqueTools.set(key, name);
+  });
+
+  const rankedTools = [...uniqueTools.entries()].sort((a, b) => b[1].length - a[1].length);
+  return rankedTools
+    .filter(([, name]) => normalizedResponse.includes(normalizeShortlistText(name)))
+    .map(([key]) => key);
+}
+
 function normalizeText(text) {
   return String(text || "")
     .toLowerCase()
@@ -195,7 +220,7 @@ function buildToolsContext(tools, userInput) {
     .map((entry) => entry.item);
 }
 
-export default function Chatbot({ tools = [] }) {
+export default function Chatbot({ tools = [], onShortlistTools }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -255,6 +280,10 @@ export default function Chatbot({ tools = [] }) {
         sender: "bot",
         timestamp: new Date(),
       };
+
+      if (typeof onShortlistTools === "function") {
+        onShortlistTools(extractShortlistedToolKeys(response, tools));
+      }
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {

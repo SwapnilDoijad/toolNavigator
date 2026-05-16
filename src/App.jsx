@@ -181,6 +181,7 @@ export default function App() {
   const [tools, setTools] = useState([]);
   const [query, setQuery] = useState("");
   const [lane, setLane] = useState("All");
+  const [chatbotShortlistKeys, setChatbotShortlistKeys] = useState([]);
   const [selectedToolKey, setSelectedToolKey] = useState(null);
   const [selectedVersionIndex, setSelectedVersionIndex] = useState(0);
   const [commandCopied, setCommandCopied] = useState(false);
@@ -242,11 +243,15 @@ export default function App() {
 
   const filteredGroups = useMemo(() => {
     const loweredQuery = query.toLowerCase();
+    const shortlistSet = new Set(chatbotShortlistKeys);
 
     return toolGroups.filter((group) => {
-      return group.searchText.includes(loweredQuery) && (lane === "All" || group.lanes.includes(lane));
+      const matchesSearch = group.searchText.includes(loweredQuery);
+      const matchesLane = lane === "All" || group.lanes.includes(lane);
+      const matchesChatbotShortlist = shortlistSet.size === 0 || shortlistSet.has(group.key);
+      return matchesSearch && matchesLane && matchesChatbotShortlist;
     });
-  }, [toolGroups, query, lane]);
+  }, [toolGroups, query, lane, chatbotShortlistKeys]);
 
   const grouped = STAGES.map((stage) => ({
     stage,
@@ -269,6 +274,15 @@ export default function App() {
   useEffect(() => {
     setCommandCopied(false);
   }, [selectedToolKey, selectedVersionIndex]);
+
+  useEffect(() => {
+    if (chatbotShortlistKeys.length === 0) return;
+    if (!selectedToolKey) return;
+    if (!chatbotShortlistKeys.includes(selectedToolKey)) {
+      setSelectedToolKey(null);
+      setSelectedVersionIndex(0);
+    }
+  }, [chatbotShortlistKeys, selectedToolKey]);
 
   const handleCopyCommand = async () => {
     const command = selectedTool ? getDracoCommand(selectedTool) : "";
@@ -323,6 +337,17 @@ export default function App() {
             <option key={item.name}>{item.name}</option>
           ))}
         </select>
+
+        {chatbotShortlistKeys.length > 0 && (
+          <button
+            type="button"
+            className="shortlist-clear"
+            onClick={() => setChatbotShortlistKeys([])}
+            title="Clear chatbot shortlist filter"
+          >
+            AI shortlist: {chatbotShortlistKeys.length} tools (Clear)
+          </button>
+        )}
       </section>
 
       <section className="workflow">
@@ -457,7 +482,7 @@ export default function App() {
           {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}
         </aside>
       )}
-      <Chatbot tools={tools} />
+      <Chatbot tools={tools} onShortlistTools={setChatbotShortlistKeys} />
     </main>
   );
 }

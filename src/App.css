@@ -65,6 +65,7 @@ h1 {
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 input,
@@ -79,6 +80,21 @@ select {
 
 input {
   flex: 1;
+}
+
+.shortlist-clear {
+  background: #10253d;
+  color: #93c5fd;
+  border: 1px solid #1d4b7a;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.shortlist-clear:hover {
+  background: #143355;
 }
 
 .workflow {

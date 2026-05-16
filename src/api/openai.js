@@ -1,29 +1,60 @@
 /**
- * OpenAI API Integration
- * 
- * SECURITY NOTE:
- * - Store your OpenAI API key in a .env.local file (never commit this)
- * - For production, consider creating a backend proxy to keep API keys server-side
- * - This frontend implementation exposes the API key in client-side code
- * 
- * Setup:
- * 1. Create a .env.local file in the root directory
- * 2. Add: VITE_OPENAI_API_KEY=your_actual_api_key_here
- * 3. Restart your dev server
+ * OpenAI API integration strategy:
+ * 1) Preferred: call our serverless proxy at /api/chat (keeps API key server-side).
+ * 2) Fallback: direct client call using VITE_OPENAI_API_KEY for local-only development.
  */
 
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const CLIENT_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
-/**
- * Validates that the API key is configured
- */
-function validateApiKey() {
-  if (!API_KEY) {
+async function callViaServerProxy(conversationHistory, userMessage) {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ conversationHistory, userMessage }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.error || `API Error: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  return data.reply;
+}
+
+async function callDirectFromClient(messages) {
+  if (!CLIENT_API_KEY) {
     throw new Error(
-      "OpenAI API key is not configured. Local: add VITE_OPENAI_API_KEY to .env.local and restart the dev server. Vercel: set VITE_OPENAI_API_KEY in Project Settings > Environment Variables and redeploy."
+      "OpenAI API key is not configured. Local dev: add VITE_OPENAI_API_KEY to .env.local and restart. Vercel: set OPENAI_API_KEY (recommended) or VITE_OPENAI_API_KEY in Project Settings and redeploy."
     );
   }
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${CLIENT_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages,
+      temperature: 0.7,
+      max_tokens: 500,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.error?.message || `API Error: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
 
 /**
@@ -33,8 +64,6 @@ function validateApiKey() {
  * @returns {Promise<string>} - The AI response
  */
 export async function callOpenAI(conversationHistory, userMessage) {
-  validateApiKey();
-
   try {
     const messages = [
       {
@@ -49,29 +78,20 @@ export async function callOpenAI(conversationHistory, userMessage) {
       },
     ];
 
-    const response = await fetch(OPENAI_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    });
+    try {
+      return await callViaServerProxy(conversationHistory, userMessage);
+    } catch (proxyError) {
+      // In local Vite dev, /api/chat may not exist. Fallback to client-side key.
+      const canFallbackToClient =
+        proxyError instanceof Error &&
+        (/404|Failed to fetch|NetworkError/i.test(proxyError.message) || !!CLIENT_API_KEY);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      const errorMessage =
-        errorData.error?.message || `API Error: ${response.status}`;
-      throw new Error(errorMessage);
+      if (!canFallbackToClient) {
+        throw proxyError;
+      }
+
+      return await callDirectFromClient(messages);
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   } catch (error) {
     console.error("OpenAI API Error:", error);
     throw error;

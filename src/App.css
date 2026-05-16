@@ -286,6 +286,10 @@ pre {
   margin: 0 0 12px;
 }
 
+.commands-pre {
+  white-space: pre;
+}
+
 .copy-command {
   position: absolute;
   top: 12px;

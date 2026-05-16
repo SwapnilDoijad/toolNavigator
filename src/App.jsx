@@ -418,7 +418,7 @@ export default function App() {
 
           <>
             <h3>Commands</h3>
-            <pre className="detail-pre">
+            <pre className="detail-pre commands-pre">
               {(() => {
                 const commands = splitSemicolonLines(getCommands(selectedTool));
                 return commands.length ? commands.join("\n") : "NA";

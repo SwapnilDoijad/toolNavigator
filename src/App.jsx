@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
+import Chatbot from "./components/Chatbot";
 import "./App.css";
 
 const GOOGLE_SHEET_CSV_URL =
@@ -456,6 +457,7 @@ export default function App() {
           {selectedTool.Citation && <p className="citation">{selectedTool.Citation}</p>}
         </aside>
       )}
+      <Chatbot />
     </main>
   );
 }

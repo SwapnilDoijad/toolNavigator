@@ -221,6 +221,8 @@ function buildToolsContext(tools, userInput) {
 }
 
 export default function Chatbot({ tools = [], onShortlistTools }) {
+  const defaultWidth = 480;
+  const defaultHeight = 560;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -233,13 +235,13 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [width, setWidth] = useState(600);
-  const [height, setHeight] = useState(700);
-  const [posX, setPosX] = useState(typeof window !== "undefined" ? window.innerWidth / 2 - 300 : 0);
-  const [posY, setPosY] = useState(typeof window !== "undefined" ? window.innerHeight / 2 - 350 : 0);
+  const [width, setWidth] = useState(defaultWidth);
+  const [height, setHeight] = useState(defaultHeight);
+  const [posX, setPosX] = useState(typeof window !== "undefined" ? window.innerWidth / 2 - defaultWidth / 2 : 0);
+  const [posY, setPosY] = useState(typeof window !== "undefined" ? window.innerHeight / 2 - defaultHeight / 2 : 0);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [prevDimensions, setPrevDimensions] = useState({ width: 600, height: 700, posX: 0, posY: 0 });
+  const [prevDimensions, setPrevDimensions] = useState({ width: defaultWidth, height: defaultHeight, posX: 0, posY: 0 });
   const messagesEndRef = useRef(null);
   const windowRef = useRef(null);
   const isResizingRef = useRef(false);

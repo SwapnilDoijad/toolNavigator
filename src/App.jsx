@@ -91,6 +91,51 @@ function splitSemicolonLines(value) {
     .filter(Boolean);
 }
 
+function parseStructuredCommands(commandsText) {
+  if (!commandsText) return [];
+
+  try {
+    // Try to find all JSON-like objects (handles both single and double quotes)
+    const objectPattern = /\{[^{}]*\}/g;
+    const matches = commandsText.match(objectPattern);
+    
+    if (!matches) return [];
+
+    return matches.map((jsonStr) => {
+      try {
+        // Convert single quotes to double quotes for valid JSON
+        const validJson = jsonStr.replace(/'/g, '"');
+        return JSON.parse(validJson);
+      } catch (e) {
+        return null;
+      }
+    }).filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function formatCommandsForDisplay(commandsText) {
+  const parsed = parseStructuredCommands(commandsText);
+  
+  if (parsed.length === 0) {
+    // Fallback to semicolon-separated format
+    const commands = splitSemicolonLines(commandsText);
+    return commands.length ? commands.join("\n") : "";
+  }
+
+  return parsed
+    .map((cmd) => {
+      const lines = [];
+      if (cmd.task) lines.push(`Task: ${cmd.task}`);
+      if (cmd.input) lines.push(`Input: ${cmd.input}`);
+      if (cmd.output) lines.push(`Output: ${cmd.output}`);
+      if (cmd.command) lines.push(`Command: ${cmd.command}`);
+      return lines.join("\n");
+    })
+    .join("\n\n");
+}
+
 function getCategory(tool) {
   return tool.domains || tool.Category || tool.Domain_Category || "";
 }
@@ -444,10 +489,7 @@ export default function App() {
           <>
             <h3>Commands</h3>
             <pre className="detail-pre commands-pre">
-              {(() => {
-                const commands = splitSemicolonLines(getCommands(selectedTool));
-                return commands.length ? commands.join("\n") : "NA";
-              })()}
+              {formatCommandsForDisplay(getCommands(selectedTool)) || "NA"}
             </pre>
           </>
 

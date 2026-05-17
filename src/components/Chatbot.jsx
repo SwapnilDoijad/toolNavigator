@@ -235,18 +235,56 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [error, setError] = useState(null);
   const [width, setWidth] = useState(600);
   const [height, setHeight] = useState(700);
+  const [posX, setPosX] = useState(window.innerWidth / 2 - 300);
+  const [posY, setPosY] = useState(window.innerHeight / 2 - 350);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [prevDimensions, setPrevDimensions] = useState({ width: 600, height: 700, posX: 0, posY: 0 });
   const messagesEndRef = useRef(null);
   const windowRef = useRef(null);
   const isResizingRef = useRef(false);
+  const isDraggingRef = useRef(false);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Handle drag
+  const handleDragStart = (e) => {
+    if (isMinimized || isMaximized || e.button !== 0) return; // Only left mouse button, not when minimized or maximized
+    isDraggingRef.current = true;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startPosX = posX;
+    const startPosY = posY;
+
+    const handleMouseMove = (moveEvent) => {
+      if (!isDraggingRef.current) return;
+      
+      const deltaX = moveEvent.clientX - startX;
+      const deltaY = moveEvent.clientY - startY;
+      
+      const maxX = window.innerWidth - width;
+      const maxY = window.innerHeight - height;
+
+      setPosX(Math.max(0, Math.min(maxX, startPosX + deltaX)));
+      setPosY(Math.max(0, Math.min(maxY, startPosY + deltaY)));
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
   // Handle resize
   const handleResizeStart = (e) => {
-    if (e.button !== 0) return; // Only left mouse button
+    if (e.button !== 0 || isMinimized || isMaximized) return; // Only left mouse button
     isResizingRef.current = true;
     const startX = e.clientX;
     const startY = e.clientY;
@@ -276,6 +314,34 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleMinimize = () => {
+    if (isMaximized) {
+      setIsMaximized(false);
+      setWidth(prevDimensions.width);
+      setHeight(prevDimensions.height);
+      setPosX(prevDimensions.posX);
+      setPosY(prevDimensions.posY);
+    }
+    setIsMinimized(!isMinimized);
+  };
+
+  const handleMaximize = () => {
+    if (!isMaximized) {
+      setPrevDimensions({ width, height, posX, posY });
+      setWidth(window.innerWidth - 40);
+      setHeight(window.innerHeight - 120);
+      setPosX(20);
+      setPosY(20);
+    } else {
+      setWidth(prevDimensions.width);
+      setHeight(prevDimensions.height);
+      setPosX(prevDimensions.posX);
+      setPosY(prevDimensions.posY);
+    }
+    setIsMaximized(!isMaximized);
+    setIsMinimized(false);
   };
 
   const handleSendMessage = async (e) => {
@@ -359,17 +425,37 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className="chatbot-window" 
+          className={`chatbot-window ${isMinimized ? "minimized" : ""} ${isMaximized ? "maximized" : ""}`}
           ref={windowRef}
           style={{
             width: `${width}px`,
-            height: `${height}px`,
+            height: isMinimized ? "auto" : `${height}px`,
+            left: `${posX}px`,
+            top: `${posY}px`,
           }}
         >
-          {/* Header */}
-          <div className="chatbot-header">
+          {/* Header - Draggable */}
+          <div 
+            className="chatbot-header"
+            onMouseDown={handleDragStart}
+            style={{ cursor: isDraggingRef.current ? "grabbing" : "grab" }}
+          >
             <h3>How can I assist you?</h3>
             <div className="chatbot-controls">
+              <button
+                className="chatbot-minimize-btn"
+                onClick={handleMinimize}
+                title={isMinimized ? "Restore" : "Minimize"}
+              >
+                {isMinimized ? "▢" : "−"}
+              </button>
+              <button
+                className="chatbot-maximize-btn"
+                onClick={handleMaximize}
+                title={isMaximized ? "Restore" : "Maximize"}
+              >
+                {isMaximized ? "▢" : "□"}
+              </button>
               <button
                 className="chatbot-clear-btn"
                 onClick={handleClear}
@@ -387,73 +473,77 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="chatbot-messages">
-            {messages.map((message) => (
+          {/* Messages - Only show if not minimized */}
+          {!isMinimized && (
+            <>
+              <div className="chatbot-messages">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`chatbot-message chatbot-message-${message.sender}`}
+                  >
+                    <div className="chatbot-message-content">
+                      {message.sender === "bot" ? (
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                      ) : (
+                        message.text
+                      )}
+                    </div>
+                    <span className="chatbot-message-time">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="chatbot-message chatbot-message-bot chatbot-loading">
+                    <div className="chatbot-typing">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                )}
+                {error && (
+                  <div className="chatbot-message chatbot-message-error">
+                    <div className="chatbot-message-content">
+                      ⚠️ {error}
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <form onSubmit={handleSendMessage} className="chatbot-form">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type your message..."
+                  disabled={isLoading}
+                  className="chatbot-input"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="chatbot-send-btn"
+                  aria-label="Send message"
+                >
+                  {isLoading ? "..." : "→"}
+                </button>
+              </form>
+
+              {/* Resize Handle */}
               <div
-                key={message.id}
-                className={`chatbot-message chatbot-message-${message.sender}`}
-              >
-                <div className="chatbot-message-content">
-                  {message.sender === "bot" ? (
-                    <ReactMarkdown>{message.text}</ReactMarkdown>
-                  ) : (
-                    message.text
-                  )}
-                </div>
-                <span className="chatbot-message-time">
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="chatbot-message chatbot-message-bot chatbot-loading">
-                <div className="chatbot-typing">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            )}
-            {error && (
-              <div className="chatbot-message chatbot-message-error">
-                <div className="chatbot-message-content">
-                  ⚠️ {error}
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <form onSubmit={handleSendMessage} className="chatbot-form">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message..."
-              disabled={isLoading}
-              className="chatbot-input"
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="chatbot-send-btn"
-              aria-label="Send message"
-            >
-              {isLoading ? "..." : "→"}
-            </button>
-          </form>
-
-          {/* Resize Handle */}
-          <div
-            className="chatbot-resize-handle"
-            onMouseDown={handleResizeStart}
-            title="Drag to resize"
-          />
+                className="chatbot-resize-handle"
+                onMouseDown={handleResizeStart}
+                title="Drag to resize"
+              />
+            </>
+          )}
         </div>
       )}
     </div>

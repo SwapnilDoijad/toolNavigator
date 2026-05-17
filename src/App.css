@@ -151,6 +151,10 @@ input {
   margin-top: 5px;
   font-size: 12px;
   opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .bacteria {

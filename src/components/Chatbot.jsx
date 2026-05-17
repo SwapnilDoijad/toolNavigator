@@ -233,12 +233,50 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [width, setWidth] = useState(600);
+  const [height, setHeight] = useState(700);
   const messagesEndRef = useRef(null);
+  const windowRef = useRef(null);
+  const isResizingRef = useRef(false);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Handle resize
+  const handleResizeStart = (e) => {
+    if (e.button !== 0) return; // Only left mouse button
+    isResizingRef.current = true;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = width;
+    const startHeight = height;
+
+    const handleMouseMove = (moveEvent) => {
+      if (!isResizingRef.current) return;
+      
+      const deltaX = moveEvent.clientX - startX;
+      const deltaY = moveEvent.clientY - startY;
+      
+      const minWidth = 400;
+      const minHeight = 400;
+      const maxWidth = Math.min(window.innerWidth * 0.95, 1200);
+      const maxHeight = Math.min(window.innerHeight * 0.95, 1000);
+
+      setWidth(Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX)));
+      setHeight(Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY)));
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -320,7 +358,14 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="chatbot-window">
+        <div 
+          className="chatbot-window" 
+          ref={windowRef}
+          style={{
+            width: `${width}px`,
+            height: `${height}px`,
+          }}
+        >
           {/* Header */}
           <div className="chatbot-header">
             <h3>How can I assist you?</h3>
@@ -402,6 +447,13 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
               {isLoading ? "..." : "→"}
             </button>
           </form>
+
+          {/* Resize Handle */}
+          <div
+            className="chatbot-resize-handle"
+            onMouseDown={handleResizeStart}
+            title="Drag to resize"
+          />
         </div>
       )}
     </div>

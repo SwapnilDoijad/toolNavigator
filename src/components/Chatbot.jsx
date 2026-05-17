@@ -253,7 +253,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
   // Handle drag
   const handleDragStart = (e) => {
-    if (isMinimized || isMaximized || e.button !== 0) return; // Only left mouse button, not when minimized or maximized
+    if (isMinimized || isMaximized || e.button !== 0) return;
     isDraggingRef.current = true;
     const startX = e.clientX;
     const startY = e.clientY;
@@ -262,12 +262,11 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
     const handleMouseMove = (moveEvent) => {
       if (!isDraggingRef.current) return;
-      
+
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
-      
-      const maxX = window.innerWidth - width;
-      const maxY = window.innerHeight - height;
+      const maxX = Math.max(0, window.innerWidth - width);
+      const maxY = Math.max(0, window.innerHeight - height);
 
       setPosX(Math.max(0, Math.min(maxX, startPosX + deltaX)));
       setPosY(Math.max(0, Math.min(maxY, startPosY + deltaY)));
@@ -283,39 +282,12 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Handle resize
-  const handleResizeStart = (e) => {
-    if (e.button !== 0 || isMinimized || isMaximized) return; // Only left mouse button
-    isResizingRef.current = true;
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startWidth = width;
-    const startHeight = height;
-
-    const handleMouseMove = (moveEvent) => {
-      if (!isResizingRef.current) return;
-      
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
-      
-      const minWidth = 400;
-      const minHeight = 400;
-      const maxWidth = Math.min(window.innerWidth * 0.95, 1200);
-      const maxHeight = Math.min(window.innerHeight * 0.95, 1000);
-
-      setWidth(Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX)));
-      setHeight(Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY)));
-    };
-
-    const handleMouseUp = () => {
-      isResizingRef.current = false;
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
+  // Handle resize from any edge/corner
   const handleResizeStart = (e, edge) => {
     if (e.button !== 0 || isMinimized || isMaximized) return;
     isResizingRef.current = true;
     resizeEdgeRef.current = edge;
+
     const startX = e.clientX;
     const startY = e.clientY;
     const startWidth = width;
@@ -325,10 +297,9 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
     const handleMouseMove = (moveEvent) => {
       if (!isResizingRef.current) return;
-      
+
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
-      
       const minWidth = 400;
       const minHeight = 400;
       const maxWidth = Math.min(window.innerWidth * 0.95, 1200);
@@ -339,12 +310,16 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       let newPosX = startPosX;
       let newPosY = startPosY;
 
-      if (edge.includes("e")) newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+      if (edge.includes("e")) {
+        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+      }
       if (edge.includes("w")) {
         newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
         newPosX = startPosX + (startWidth - newWidth);
       }
-      if (edge.includes("s")) newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+      if (edge.includes("s")) {
+        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+      }
       if (edge.includes("n")) {
         newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
         newPosY = startPosY + (startHeight - newHeight);
@@ -366,32 +341,30 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  };
-
-  const handleMinimize = () => {
-    if (isMaximized) {
-      setIsMaximized(false);
-      setWidth(prevDimensions.width);
-      setHeight(prevDimensions.height);
-      setPosX(prevDimensions.posX);
-      setPosY(prevDimensions.posY);
-    }
-    setIsMinimized(!isMinimized);
-  };
 
   const handleMinimize = () => {
     setIsMinimized(true);
     setIsOpen(false);
+    setIsMaximized(false);
   };
-      setPosX(prevDimensions.posX);
-      setPosY(prevDimensions.posY);
-    }
-    setIsMaximized(!isMaximized);
-    if (isMinimized) {
+
+  const handleMaximize = () => {
+    if (!isMaximized) {
+      setPrevDimensions({ width, height, posX, posY });
+      setWidth(window.innerWidth - 40);
+      setHeight(window.innerHeight - 120);
+      setPosX(20);
+      setPosY(20);
+      setIsMaximized(true);
       setIsMinimized(false);
+      return;
     }
+
+    setWidth(prevDimensions.width);
+    setHeight(prevDimensions.height);
+    setPosX(prevDimensions.posX);
+    setPosY(prevDimensions.posY);
+    setIsMaximized(false);
   };
 
   const handleSendMessage = async (e) => {

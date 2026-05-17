@@ -74,23 +74,84 @@
   }
 }
 
-/* Resize Handle */
+/* Resize Handles - All Edges */
 .chatbot-resize-handle {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 50%, #1d4ed8 50%);
-  border-radius: 0 0 18px 0;
+  z-index: 1001;
 }
 
-/* Minimize state - only show header */
-.chatbot-window.minimized .chatbot-messages,
-.chatbot-window.minimized .chatbot-form,
-.chatbot-window.minimized .chatbot-resize-handle {
-  display: none;
+/* Top edge */
+.chatbot-resize-handle.n {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: n-resize;
+}
+
+/* Bottom edge */
+.chatbot-resize-handle.s {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: s-resize;
+}
+
+/* Left edge */
+.chatbot-resize-handle.w {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: w-resize;
+}
+
+/* Right edge */
+.chatbot-resize-handle.e {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: e-resize;
+}
+
+/* Top-left corner */
+.chatbot-resize-handle.nw {
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nw-resize;
+}
+
+/* Top-right corner */
+.chatbot-resize-handle.ne {
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: ne-resize;
+}
+
+/* Bottom-left corner */
+.chatbot-resize-handle.sw {
+  bottom: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: sw-resize;
+}
+
+/* Bottom-right corner */
+.chatbot-resize-handle.se {
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #1d4ed8 50%);
+  border-radius: 0 0 18px 0;
 }
 
 /* Header */

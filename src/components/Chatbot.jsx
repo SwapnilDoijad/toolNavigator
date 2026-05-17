@@ -235,8 +235,8 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [error, setError] = useState(null);
   const [width, setWidth] = useState(600);
   const [height, setHeight] = useState(700);
-  const [posX, setPosX] = useState(window.innerWidth / 2 - 300);
-  const [posY, setPosY] = useState(window.innerHeight / 2 - 350);
+  const [posX, setPosX] = useState(typeof window !== "undefined" ? window.innerWidth / 2 - 300 : 0);
+  const [posY, setPosY] = useState(typeof window !== "undefined" ? window.innerHeight / 2 - 350 : 0);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [prevDimensions, setPrevDimensions] = useState({ width: 600, height: 700, posX: 0, posY: 0 });
@@ -244,6 +244,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const windowRef = useRef(null);
   const isResizingRef = useRef(false);
   const isDraggingRef = useRef(false);
+  const resizeEdgeRef = useRef(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -311,7 +312,60 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
+  const handleResizeStart = (e, edge) => {
+    if (e.button !== 0 || isMinimized || isMaximized) return;
+    isResizingRef.current = true;
+    resizeEdgeRef.current = edge;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = width;
+    const startHeight = height;
+    const startPosX = posX;
+    const startPosY = posY;
 
+    const handleMouseMove = (moveEvent) => {
+      if (!isResizingRef.current) return;
+      
+      const deltaX = moveEvent.clientX - startX;
+      const deltaY = moveEvent.clientY - startY;
+      
+      const minWidth = 400;
+      const minHeight = 400;
+      const maxWidth = Math.min(window.innerWidth * 0.95, 1200);
+      const maxHeight = Math.min(window.innerHeight * 0.95, 1000);
+
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+      let newPosX = startPosX;
+      let newPosY = startPosY;
+
+      if (edge.includes("e")) newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+      if (edge.includes("w")) {
+        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+        newPosX = startPosX + (startWidth - newWidth);
+      }
+      if (edge.includes("s")) newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+      if (edge.includes("n")) {
+        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+        newPosY = startPosY + (startHeight - newHeight);
+      }
+
+      setWidth(newWidth);
+      setHeight(newHeight);
+      setPosX(newPosX);
+      setPosY(newPosY);
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      resizeEdgeRef.current = null;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -327,21 +381,17 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setIsMinimized(!isMinimized);
   };
 
-  const handleMaximize = () => {
-    if (!isMaximized) {
-      setPrevDimensions({ width, height, posX, posY });
-      setWidth(window.innerWidth - 40);
-      setHeight(window.innerHeight - 120);
-      setPosX(20);
-      setPosY(20);
-    } else {
-      setWidth(prevDimensions.width);
-      setHeight(prevDimensions.height);
+  const handleMinimize = () => {
+    setIsMinimized(true);
+    setIsOpen(false);
+  };
       setPosX(prevDimensions.posX);
       setPosY(prevDimensions.posY);
     }
     setIsMaximized(!isMaximized);
-    setIsMinimized(false);
+    if (isMinimized) {
+      setIsMinimized(false);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -415,9 +465,16 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       {/* Floating Button */}
       <button
         className="chatbot-toggle"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (isMinimized) {
+            setIsMinimized(false);
+            setIsOpen(true);
+          } else {
+            setIsOpen(!isOpen);
+          }
+        }}
         aria-label="Toggle chatbot"
-        title="Open chatbot"
+        title={isMinimized ? "Restore chatbot" : "Toggle chatbot"}
       >
         {isOpen ? "✕" : "💬"}
       </button>
@@ -537,11 +594,15 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
               </form>
 
               {/* Resize Handle */}
-              <div
-                className="chatbot-resize-handle"
-                onMouseDown={handleResizeStart}
-                title="Drag to resize"
-              />
+              {/* Resize Handles for all edges */}
+              <div className="chatbot-resize-handle n" onMouseDown={(e) => handleResizeStart(e, "n")} title="Resize top" />
+              <div className="chatbot-resize-handle s" onMouseDown={(e) => handleResizeStart(e, "s")} title="Resize bottom" />
+              <div className="chatbot-resize-handle w" onMouseDown={(e) => handleResizeStart(e, "w")} title="Resize left" />
+              <div className="chatbot-resize-handle e" onMouseDown={(e) => handleResizeStart(e, "e")} title="Resize right" />
+              <div className="chatbot-resize-handle nw" onMouseDown={(e) => handleResizeStart(e, "nw")} title="Resize top-left" />
+              <div className="chatbot-resize-handle ne" onMouseDown={(e) => handleResizeStart(e, "ne")} title="Resize top-right" />
+              <div className="chatbot-resize-handle sw" onMouseDown={(e) => handleResizeStart(e, "sw")} title="Resize bottom-left" />
+              <div className="chatbot-resize-handle se" onMouseDown={(e) => handleResizeStart(e, "se")} title="Resize bottom-right" />
             </>
           )}
         </div>

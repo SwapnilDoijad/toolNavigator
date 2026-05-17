@@ -8,27 +8,27 @@ function getFunctionalCategory(tool) {
 }
 
 function getCategory(tool) {
-  return tool.Category || tool.Domain_Category || "";
+  return tool.domains || tool.Category || tool.Domain_Category || "";
 }
 
 function getCommands(tool) {
-  return tool.Commands || tool.Command || "";
+  return tool.command_templates || tool.Commands || tool.Command || "";
 }
 
 function getDracoCommand(tool) {
-  return tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "";
+  return tool.show_help || tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "";
 }
 
 function getCommonUseCases(tool) {
-  return tool.Common_use_cases || tool["Common use cases"] || tool.CommonUseCases || tool.Use_cases || "";
+  return tool.common_use_cases || tool.Common_use_cases || tool["Common use cases"] || tool.CommonUseCases || tool.Use_cases || "";
 }
 
 function getTypicalInputs(tool) {
-  return tool.Typical_inputs || tool["Typical inputs"] || tool.TypicalInputs || "";
+  return tool.input_formats || tool.Typical_inputs || tool["Typical inputs"] || tool.TypicalInputs || "";
 }
 
 function getTypicalOutputs(tool) {
-  return tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
+  return tool.output_formats || tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
 
 function normalizeShortlistText(text) {
@@ -44,7 +44,7 @@ function extractShortlistedToolKeys(responseText, tools) {
   const uniqueTools = new Map();
 
   tools.forEach((tool) => {
-    const name = String(tool.Name || "").trim();
+    const name = String(tool.tool_name || tool.Name || "").trim();
     if (!name) return;
     const key = name.toLowerCase();
     if (!uniqueTools.has(key)) uniqueTools.set(key, name);
@@ -173,10 +173,10 @@ function buildToolsContext(tools, userInput) {
 
   const scored = tools.map((tool) => {
     const searchableText = normalizeText(
-      `${tool.Name || ""} ${tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)} ${tool.URL || ""}`
+      `${tool.tool_name || tool.Name || ""} ${tool.description || tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)} ${tool.tool_link || tool.URL || ""}`
     );
     const toolTokens = new Set(tokenize(searchableText));
-    const nameTokens = new Set(tokenize(tool.Name || ""));
+    const nameTokens = new Set(tokenize(tool.tool_name || tool.Name || ""));
 
     let score = 0;
 
@@ -200,13 +200,13 @@ function buildToolsContext(tools, userInput) {
     return {
       score,
       item: {
-        name: tool.Name || "NA",
-        version: tool.Version || "NA",
+        name: tool.tool_name || tool.Name || "NA",
+        version: tool.version || tool.Version || "NA",
         category: getCategory(tool) || "NA",
         functionalCategory: getFunctionalCategory(tool) || "NA",
-        description: tool.Description || "NA",
+        description: tool.description || tool.Description || "NA",
         helpCommand: getDracoCommand(tool) || "NA",
-        url: tool.URL || "",
+        url: tool.tool_link || tool.URL || "",
       },
     };
   });

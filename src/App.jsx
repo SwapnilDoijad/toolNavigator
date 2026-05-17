@@ -63,11 +63,11 @@ function getFirstValue(tool, keys) {
 }
 
 function getDracoCommand(tool) {
-  return getFirstValue(tool, ["Call_tool", "Call tool", "Draco_command", "Draco command"]);
+  return getFirstValue(tool, ["show_help", "Call_tool", "Call tool", "Draco_command", "Draco command"]);
 }
 
 function getCommands(tool) {
-  return getFirstValue(tool, ["Commands", "Command"]);
+  return getFirstValue(tool, ["command_templates", "Commands", "Command"]);
 }
 
 function getCommonUseCases(tool) {
@@ -75,11 +75,11 @@ function getCommonUseCases(tool) {
 }
 
 function getTypicalInputs(tool) {
-  return getFirstValue(tool, ["Typical_inputs", "Typical inputs", "TypicalInputs"]);
+  return getFirstValue(tool, ["input_formats", "Typical_inputs", "Typical inputs", "TypicalInputs"]);
 }
 
 function getTypicalOutputs(tool) {
-  return getFirstValue(tool, ["Typical_outputs", "Typical outputs", "TypicalOutputs"]);
+  return getFirstValue(tool, ["output_formats", "Typical_outputs", "Typical outputs", "TypicalOutputs"]);
 }
 
 function splitSemicolonLines(value) {
@@ -92,11 +92,11 @@ function splitSemicolonLines(value) {
 }
 
 function getCategory(tool) {
-  return tool.Category || tool.Domain_Category || "";
+  return tool.domains || tool.Category || tool.Domain_Category || "";
 }
 
 function getDisplayStatus(tool) {
-  const status = tool.Status || "";
+  const status = tool.status || tool.Status || "";
   const statusParts = status
     .split(",")
     .map((part) => part.trim())
@@ -130,26 +130,25 @@ function copyText(text) {
 
 function getToolSearchText(tool) {
   return `
-    ${tool.Name}
-    ${tool.Version}
-    ${tool.Status}
+    ${tool.tool_name || tool.Name}
+    ${tool.version || tool.Version}
+    ${tool.status || tool.Status}
     ${getCategory(tool)}
     ${getFunctionalCategory(tool)}
-    ${tool.Description}
-    ${tool.Installed_on}
-    ${tool.Call_tool}
+    ${tool.description || tool.Description}
+    ${tool.installed_on || tool.Installed_on}
     ${getDracoCommand(tool)}
     ${getCommands(tool)}
     ${getCommonUseCases(tool)}
     ${getTypicalInputs(tool)}
     ${getTypicalOutputs(tool)}
-    ${tool.URL}
+    ${tool.tool_link || tool.URL}
     ${tool.Citation}
   `.toLowerCase();
 }
 
 function detectStage(tool) {
-  const text = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${tool.Description}`.toLowerCase();
+  const text = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${tool.description || tool.Description}`.toLowerCase();
 
   if (text.includes("quality") || text.includes("qc") || text.includes("trim")) return "QC";
   if (text.includes("assembl")) return "Assembly";
@@ -195,7 +194,7 @@ export default function App() {
           skipEmptyLines: true,
           complete: (result) => {
             const cleaned = result.data
-              .filter((row) => row.Name)
+              .filter((row) => row.tool_name || row.Name)
               .map((row) => ({
                 ...row,
                 Stage: detectStage(row),
@@ -214,13 +213,13 @@ export default function App() {
     const groups = new Map();
 
     tools.forEach((tool) => {
-      const key = (tool.Name || "").trim().toLowerCase();
+      const key = (tool.tool_name || tool.Name || "").trim().toLowerCase();
       if (!key) return;
 
       if (!groups.has(key)) {
         groups.set(key, {
           key,
-          name: (tool.Name || "NA").trim(),
+          name: (tool.tool_name || tool.Name || "NA").trim(),
           stage: tool.Stage || "Other",
           versions: [tool],
           lanes: new Set(tool.Lanes || ["Other"]),
@@ -366,7 +365,7 @@ export default function App() {
                   }}
                 >
                   <strong>{toolGroup.name}</strong>
-                  <small>{getFunctionalCategory(toolGroup.versions[0]) || toolGroup.versions[0].Category}</small>
+                  <small>{getFunctionalCategory(toolGroup.versions[0]) || toolGroup.versions[0].domains || toolGroup.versions[0].Category}</small>
                 </button>
               ))}
 
@@ -401,21 +400,21 @@ export default function App() {
                   <button
                     type="button"
                     className={`version-chip ${selectedVersionIndex === index ? "active" : ""}`}
-                    key={`${selectedGroup.key}-${tool.Version || "NA"}-${index}`}
+                    key={`${selectedGroup.key}-${tool.version || tool.Version || "NA"}-${index}`}
                     onClick={() => setSelectedVersionIndex(index)}
                   >
-                    {tool.Version || `Version ${index + 1}`}
+                    {tool.version || tool.Version || `Version ${index + 1}`}
                   </button>
                 ))}
               </div>
             </>
           )}
 
-          <p>{selectedTool.Description}</p>
+          <p>{selectedTool.description || selectedTool.Description}</p>
 
           <dl>
             <dt>Version</dt>
-            <dd>{selectedTool.Version || "NA"}</dd>
+            <dd>{selectedTool.version || selectedTool.Version || "NA"}</dd>
 
             <dt>Status</dt>
             <dd>{getDisplayStatus(selectedTool) || "NA"}</dd>
@@ -427,7 +426,7 @@ export default function App() {
             <dd>{getFunctionalCategory(selectedTool) || "NA"}</dd>
 
             <dt>Installed on</dt>
-            <dd>{selectedTool.Installed_on || "NA"}</dd>
+            <dd>{selectedTool.installed_on || selectedTool.Installed_on || "NA"}</dd>
           </dl>
 
           {getDracoCommand(selectedTool) && (
@@ -467,14 +466,14 @@ export default function App() {
             <pre className="detail-pre">{getTypicalOutputs(selectedTool) || "NA"}</pre>
           </>
 
-          {selectedTool.URL && (
-            <a href={selectedTool.URL} target="_blank" rel="noreferrer">
+          {(selectedTool.tool_link || selectedTool.URL) && (
+            <a href={selectedTool.tool_link || selectedTool.URL} target="_blank" rel="noreferrer">
               Open tool website →
             </a>
           )}
 
-          {selectedTool.Reference && (
-            <a href={selectedTool.Reference} target="_blank" rel="noreferrer" className="reference">
+          {(selectedTool.article_url || selectedTool.Reference) && (
+            <a href={selectedTool.article_url || selectedTool.Reference} target="_blank" rel="noreferrer" className="reference">
               Open reference →
             </a>
           )}

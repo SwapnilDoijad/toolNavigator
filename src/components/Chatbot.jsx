@@ -435,11 +435,21 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
   };
 
+  const toggleImageSize = 96;
+  const toggleStyle = isOpen
+    ? {
+        left: `${posX + width / 2}px`,
+        top: `${Math.max(8, posY - toggleImageSize / 2)}px`,
+        bottom: "auto",
+      }
+    : undefined;
+
   return (
     <div className="chatbot-container">
       {/* Floating Button */}
       <button
         className="chatbot-toggle"
+        style={toggleStyle}
         onClick={() => {
           if (isMinimized) {
             setIsMinimized(false);
@@ -448,14 +458,10 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
             setIsOpen(!isOpen);
           }
         }}
-        aria-label="Toggle chatbot"
-        title={isMinimized ? "Restore chatbot" : "Toggle chatbot"}
+        aria-label={isOpen ? "Close chatbot" : "Open chatbot"}
+        title={isMinimized ? "Restore chatbot" : isOpen ? "Close chatbot" : "Open chatbot"}
       >
-        {isOpen ? (
-          "✕"
-        ) : (
-          <img src="/chatbot.png" alt="Chatbot" className="chatbot-toggle-image" />
-        )}
+        <img src="/chatbot.png" alt="Chatbot" className="chatbot-toggle-image" />
       </button>
 
       {/* Chat Window */}

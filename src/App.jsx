@@ -346,7 +346,7 @@ export default function App() {
           <p className="eyebrow">Microbial Bioinformatics Tools</p>
           <h1>AI-Assisted Interactive tool navigator</h1>
           <p>
-            Ask the AI chatbot or browse tools to find the best solution, explore details, and get ready-to-run HPC-server commands
+            Ask the AI chatbot or browse tools to find the best solution, explore details, and get ready-to-run commands on Draco HPC-server 
           </p>
         </div>
 

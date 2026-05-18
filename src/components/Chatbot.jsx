@@ -454,7 +454,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         {isOpen ? (
           "✕"
         ) : (
-          <img src="/microbiome.png" alt="Chatbot" className="chatbot-toggle-image" />
+          <img src="/chatbot.png" alt="Chatbot" className="chatbot-toggle-image" />
         )}
       </button>
 

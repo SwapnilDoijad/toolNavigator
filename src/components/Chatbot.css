@@ -48,7 +48,7 @@
   height: 38px;
   object-fit: contain;
   display: block;
-  animation: chatbot-icon-float 2.2s ease-in-out infinite;
+  animation: chatbot-icon-float 3s ease-in-out infinite;
 }
 
 @keyframes chatbot-icon-float {
@@ -57,7 +57,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
   }
 }
 

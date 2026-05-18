@@ -1,16 +1,42 @@
-# React + Vite
+# BioInfoAI – AI-Assisted Bioinformatics Tool Navigator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <img src="public/BioInfoAI.svg" alt="BioInfoAI Logo" width="350">
+</p>
 
-Currently, two official plugins are available:
+BioInfoAI is an AI-powered platform designed to help researchers discover, explore, and run bioinformatics tools more efficiently. Instead of manually searching through tool lists and documentation, users can ask natural-language questions or browse tools interactively.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The platform combines semantic search, structured tool metadata, and LLM-based assistance to recommend suitable tools, explain their usage, and generate runnable commands for HPC environments such as Draco.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- AI chatbot assistance for natural-language queries
+- Semantic search for bioinformatics tools
+- Tool recommendations based on task and sequencing technology
+- Automatic command generation
+- Interactive tool navigator and filtering
+- Structured tool metadata and ontology
+- Supports reproducible workflows
+- Designed for HPC environments and scalable analysis pipelines
 
-## Expanding the ESLint configuration
+## Example use cases
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Ask questions such as:
+
+- "Which tool should I use for Nanopore read quality control?"
+- "Find tools for metagenome binning"
+- "How do I run Kraken2 on Draco?"
+- "Suggest a tool for antimicrobial resistance detection"
+
+## Technology stack
+
+- React + Vite
+- OpenAI LLM integration
+- FAISS semantic search
+- SentenceTransformers embeddings
+- Python backend
+- Structured YAML/JSON tool ontology
+
+## Goal
+
+To reduce the time spent searching documentation and selecting tools by providing an intelligent assistant for bioinformatics workflows.

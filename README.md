@@ -1,7 +1,7 @@
 # BioInfoAI – AI-Assisted Bioinformatics Tool Navigator
 
 <p align="center">
-  <img src="public/BioInfoAI.svg" alt="BioInfoAI Logo" width="350">
+  <img src="public/BioInfoAI.svg" alt="BioInfoAI Logo" width="550">
 </p>
 
 BioInfoAI is an AI-powered platform designed to help researchers discover, explore, and run bioinformatics tools more efficiently. Instead of manually searching through tool lists and documentation, users can ask natural-language questions or browse tools interactively.

@@ -1,4 +1,4 @@
-# BioInfoAI – AI-Assisted Bioinformatics Tool Navigator
+# BioInfoAI: AI-Assisted Bioinformatics Tool Navigator
 
 <p align="center">
   <img src="public/BioInfoAI.svg" alt="BioInfoAI Logo" width="750">
@@ -40,3 +40,6 @@ Ask questions such as:
 ## Goal
 
 To reduce the time spent searching documentation and selecting tools by providing an intelligent assistant for bioinformatics workflows.
+
+## Contact
+swapnil.doijad@gmail.com

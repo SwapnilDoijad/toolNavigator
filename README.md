@@ -1,4 +1,6 @@
-# BioInfoAI: AI-Assisted Bioinformatics Tool Navigator
+# # [BioInfoAI: AI-Assisted Bioinformatics Tool Navigator](https://tool-navigator.vercel.app/)
+
+link: https://tool-navigator.vercel.app/
 
 <p align="center">
   <img src="public/BioInfoAI.svg" alt="BioInfoAI Logo" width="750">

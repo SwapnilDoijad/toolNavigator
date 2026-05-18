@@ -435,7 +435,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
   };
 
-  const toggleImageSize = 96;
+  const toggleImageSize = 120;
   const toggleStyle = isOpen
     ? {
         left: `${posX + width / 2}px`,

@@ -43,11 +43,11 @@
 }
 
 .chatbot-toggle-image {
-  width: 96px;
-  height: 96px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
   display: block;
-  animation: chatbot-icon-float 3s ease-in-out infinite;
+  animation: chatbot-icon-float 1.9s ease-in-out infinite;
 }
 
 @keyframes chatbot-icon-float {
@@ -56,7 +56,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-2px);
+    transform: translateY(-7px);
   }
 }
 

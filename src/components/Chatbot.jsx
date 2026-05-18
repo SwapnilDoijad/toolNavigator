@@ -455,10 +455,12 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
           "✕"
         ) : (
           <svg viewBox="0 0 24 24" aria-hidden="true" className="chatbot-toggle-icon">
-            <path
-              fill="currentColor"
-              d="M12 2C6.48 2 2 5.92 2 10.75c0 2.64 1.35 5 3.5 6.62V22l4.06-2.2c.78.14 1.6.2 2.44.2 5.52 0 10-3.92 10-8.75S17.52 2 12 2Zm-4 7.75a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"
-            />
+            <rect x="5" y="6" width="14" height="12" rx="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
+            <circle cx="9.25" cy="11" r="1.2" fill="currentColor" />
+            <circle cx="14.75" cy="11" r="1.2" fill="currentColor" />
+            <rect x="8.25" y="14" width="7.5" height="1.8" rx="0.9" fill="currentColor" />
+            <path d="M12 3.5v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <circle cx="12" cy="2.7" r="1" fill="currentColor" />
           </svg>
         )}
       </button>

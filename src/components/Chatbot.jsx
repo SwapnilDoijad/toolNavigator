@@ -451,7 +451,16 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         aria-label="Toggle chatbot"
         title={isMinimized ? "Restore chatbot" : "Toggle chatbot"}
       >
-        {isOpen ? "✕" : "💬"}
+        {isOpen ? (
+          "✕"
+        ) : (
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="chatbot-toggle-icon">
+            <path
+              fill="currentColor"
+              d="M12 2C6.48 2 2 5.92 2 10.75c0 2.64 1.35 5 3.5 6.62V22l4.06-2.2c.78.14 1.6.2 2.44.2 5.52 0 10-3.92 10-8.75S17.52 2 12 2Zm-4 7.75a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm4 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"
+            />
+          </svg>
+        )}
       </button>
 
       {/* Chat Window */}

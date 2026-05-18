@@ -37,14 +37,14 @@
 }
 
 .chatbot-toggle-icon {
-  width: 34px;
-  height: 34px;
+  width: 48px;
+  height: 48px;
   display: block;
 }
 
 .chatbot-toggle-image {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   object-fit: contain;
   display: block;
   animation: chatbot-icon-float 1.9s ease-in-out infinite;

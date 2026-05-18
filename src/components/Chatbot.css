@@ -10,7 +10,8 @@
 .chatbot-toggle {
   position: fixed;
   bottom: 22px;
-  right: 22px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -28,12 +29,12 @@
 }
 
 .chatbot-toggle:hover {
-  transform: translateY(-2px) scale(1.04);
+  transform: translateX(-50%) translateY(-2px) scale(1.04);
   box-shadow: 0 16px 26px rgba(14, 67, 143, 0.42);
 }
 
 .chatbot-toggle:active {
-  transform: scale(0.95);
+  transform: translateX(-50%) scale(0.95);
 }
 
 /* Chat Window */

@@ -223,7 +223,7 @@ function buildToolsContext(tools, userInput) {
 export default function Chatbot({ tools = [], onShortlistTools }) {
   const defaultWidth = 480;
   const defaultHeight = 560;
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState([
     {
       id: 1,

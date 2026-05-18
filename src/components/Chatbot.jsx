@@ -237,8 +237,8 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [error, setError] = useState(null);
   const [width, setWidth] = useState(defaultWidth);
   const [height, setHeight] = useState(defaultHeight);
-  const [posX, setPosX] = useState(20);
-  const [posY, setPosY] = useState(20);
+  const [posX, setPosX] = useState(typeof window !== "undefined" ? window.innerWidth / 2 - defaultWidth / 2 : 0);
+  const [posY, setPosY] = useState(typeof window !== "undefined" ? window.innerHeight / 2 - defaultHeight / 2 : 0);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [prevDimensions, setPrevDimensions] = useState({ width: defaultWidth, height: defaultHeight, posX: 0, posY: 0 });

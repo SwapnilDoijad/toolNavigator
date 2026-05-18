@@ -454,14 +454,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         {isOpen ? (
           "✕"
         ) : (
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="chatbot-toggle-icon">
-            <rect x="5" y="6" width="14" height="12" rx="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
-            <circle cx="9.25" cy="11" r="1.2" fill="currentColor" />
-            <circle cx="14.75" cy="11" r="1.2" fill="currentColor" />
-            <rect x="8.25" y="14" width="7.5" height="1.8" rx="0.9" fill="currentColor" />
-            <path d="M12 3.5v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="12" cy="2.7" r="1" fill="currentColor" />
-          </svg>
+          <img src="/microbiome.png" alt="Chatbot" className="chatbot-toggle-image" />
         )}
       </button>
 

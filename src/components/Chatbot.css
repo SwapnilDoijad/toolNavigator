@@ -43,6 +43,24 @@
   display: block;
 }
 
+.chatbot-toggle-image {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+  animation: chatbot-icon-float 2.2s ease-in-out infinite;
+}
+
+@keyframes chatbot-icon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 /* Chat Window */
 .chatbot-window {
   position: fixed;

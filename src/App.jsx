@@ -343,10 +343,10 @@ export default function App() {
     <main className="app">
       <header className="topbar">
         <div className="hero-copy">
-          <p className="eyebrow">VEO Microbial Bioinformatics Tools</p>
-          <h1>Interactive tool navigator</h1>
+          <p className="eyebrow">Microbial Bioinformatics Tools</p>
+          <h1>AI-Assisted Interactive tool navigator</h1>
           <p>
-            click to choose the best tool for your needs, explore details and get the command to run it with Draco.
+            Ask the AI assistant or browse tools to find the best solution, explore details, and get ready-to-run HPC-server commands
           </p>
         </div>
 

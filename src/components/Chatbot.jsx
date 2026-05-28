@@ -229,11 +229,10 @@ function buildToolsContext(tools, userInput) {
 
   const withMatches = scored.filter((entry) => entry.score >= 1.2);
   const source = withMatches.length > 0 ? withMatches : scored;
+  const ranked = source.sort((a, b) => b.score - a.score);
 
-  return source
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12)
-    .map((entry) => entry.item);
+  // Keep only the highest-scoring matches for concise, deterministic shortlist behavior.
+  return ranked.slice(0, 3).map((entry) => entry.item);
 }
 
 export default function Chatbot({ tools = [], onShortlistTools }) {
@@ -427,7 +426,15 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       };
 
       if (typeof onShortlistTools === "function") {
-        onShortlistTools(extractShortlistedToolKeys(response, tools));
+        const matchedToolKeys = [...new Set(
+          toolsContext
+            .map((tool) => String(tool.name || "").trim().toLowerCase())
+            .filter(Boolean)
+        )];
+
+        onShortlistTools(
+          matchedToolKeys.length > 0 ? matchedToolKeys : extractShortlistedToolKeys(response, tools)
+        );
       }
 
       setMessages((prev) => [...prev, botMessage]);

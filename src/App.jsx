@@ -208,7 +208,7 @@ function detectStage(tool) {
 
 function detectLane(tool) {
   const categoryParts = getCategory(tool)
-    .split("+")
+    .split(/[;+]/)
     .map((part) => part.trim().toLowerCase())
     .filter(Boolean);
 

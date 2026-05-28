@@ -4,11 +4,23 @@ import { callOpenAI } from "../api/openai";
 import "./Chatbot.css";
 
 function getFunctionalCategory(tool) {
-  return tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
+  return tool.primary_function || tool.Primary_function || tool["Primary function"] || tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
+}
+
+function getSecondaryFunction(tool) {
+  return tool.secondary_function || tool.Secondary_function || tool["Secondary function"] || "";
 }
 
 function getCategory(tool) {
   return tool.domains || tool.Category || tool.Domain_Category || "";
+}
+
+function getToolAdditionalInfo(tool) {
+  return tool.tool_additional_info || tool.Tool_additional_info || tool["Tool additional info"] || "";
+}
+
+function getSupportedTechnologies(tool) {
+  return tool.supported_technologies || tool.Supported_technologies || tool["Supported technologies"] || "";
 }
 
 function getCommands(tool) {
@@ -173,7 +185,7 @@ function buildToolsContext(tools, userInput) {
 
   const scored = tools.map((tool) => {
     const searchableText = normalizeText(
-      `${tool.tool_name || tool.Name || ""} ${tool.description || tool.Description || ""} ${getCategory(tool)} ${getFunctionalCategory(tool)} ${getCommands(tool)} ${getDracoCommand(tool)} ${tool.tool_link || tool.URL || ""}`
+      `${tool.tool_name || tool.Name || ""} ${getToolAdditionalInfo(tool)} ${getCategory(tool)} ${getSupportedTechnologies(tool)} ${getFunctionalCategory(tool)} ${getSecondaryFunction(tool)} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`
     );
     const toolTokens = new Set(tokenize(searchableText));
     const nameTokens = new Set(tokenize(tool.tool_name || tool.Name || ""));
@@ -202,9 +214,13 @@ function buildToolsContext(tools, userInput) {
       item: {
         name: tool.tool_name || tool.Name || "NA",
         version: tool.version || tool.Version || "NA",
+        additionalInfo: getToolAdditionalInfo(tool) || "NA",
         category: getCategory(tool) || "NA",
+        supportedTechnologies: getSupportedTechnologies(tool) || "NA",
         functionalCategory: getFunctionalCategory(tool) || "NA",
+        secondaryFunction: getSecondaryFunction(tool) || "NA",
         description: tool.description || tool.Description || "NA",
+        commonUseCases: getCommonUseCases(tool) || "NA",
         helpCommand: getDracoCommand(tool) || "NA",
         url: tool.tool_link || tool.URL || "",
       },

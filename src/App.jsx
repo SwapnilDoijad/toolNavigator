@@ -42,7 +42,7 @@ function getSheetCsvUrl() {
 }
 
 function getFunctionalCategory(tool) {
-  return tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
+  return tool.primary_function || tool.Primary_function || tool["Primary function"] || tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
 }
 
 function normalizeHeaderKey(key) {
@@ -410,7 +410,7 @@ export default function App() {
                   }}
                 >
                   <strong>{toolGroup.name}</strong>
-                  <small>{getFunctionalCategory(toolGroup.versions[0]) || toolGroup.versions[0].domains || toolGroup.versions[0].Category}</small>
+                  <small>{getFunctionalCategory(toolGroup.versions[0]) || "NA"}</small>
                 </button>
               ))}
 

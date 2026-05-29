@@ -103,8 +103,7 @@ input {
   grid-template-columns: repeat(8, minmax(220px, 1fr));
   gap: 14px;
   overflow-x: auto;
-  overflow-y: hidden;
-  max-height: min(720px, calc(100vh - 320px));
+  overflow-y: visible;
   padding-bottom: 20px;
 }
 
@@ -114,7 +113,7 @@ input {
   border-radius: 22px;
   padding: 14px;
   min-height: 0;
-  height: 100%;
+  height: min(720px, calc(100vh - 320px));
   display: flex;
   flex-direction: column;
 }
@@ -129,9 +128,30 @@ input {
 .nodes {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: 10px;
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
   padding-right: 4px;
+}
+
+.nodes::-webkit-scrollbar {
+  width: 10px;
+}
+
+.nodes::-webkit-scrollbar-track {
+  background: #0b1226;
+  border-radius: 10px;
+}
+
+.nodes::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+.nodes::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 .node {

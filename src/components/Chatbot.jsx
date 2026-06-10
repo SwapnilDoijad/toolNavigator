@@ -78,11 +78,43 @@ function normalizeText(text) {
     .trim();
 }
 
-function tokenize(text) {
+const STOP_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "by",
+  "can",
+  "for",
+  "from",
+  "how",
+  "i",
+  "in",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "that",
+  "the",
+  "this",
+  "to",
+  "what",
+  "which",
+  "with",
+  "you",
+  "your",
+]);
+
+function tokenize(text, removeStopWords = false) {
   return normalizeText(text)
     .split(" ")
     .map((token) => token.trim())
-    .filter((token) => token.length > 2);
+    .filter((token) => token.length > 2)
+    .filter((token) => !removeStopWords || !STOP_WORDS.has(token));
 }
 
 function stemToken(token) {
@@ -181,7 +213,7 @@ function buildToolsContext(tools, userInput) {
   if (!Array.isArray(tools) || tools.length === 0) return [];
 
   const queryText = normalizeText(userInput);
-  const queryTokens = [...new Set(tokenize(userInput))];
+  const queryTokens = [...new Set(tokenize(userInput, true))];
 
   const scored = tools.map((tool) => {
     const searchableText = normalizeText(
@@ -238,7 +270,7 @@ function buildToolsContext(tools, userInput) {
 export default function Chatbot({ tools = [], onShortlistTools }) {
   const defaultWidth = 480;
   const defaultHeight = 560;
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -450,7 +482,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setMessages([
       {
         id: 1,
-        text: "Hi! I'm your AI assistant. How can I help you with your tools and workflows today?",
+        text: "Hi! I'm your AI assistant. Ask me about tools and workflows today? For example, you can ask: 'How can I assemble nanopore reads?'",
         sender: "bot",
         timestamp: new Date(),
       },

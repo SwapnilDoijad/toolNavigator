@@ -264,7 +264,7 @@ function buildToolsContext(tools, userInput) {
   const ranked = source.sort((a, b) => b.score - a.score);
 
   // Keep only the highest-scoring matches for concise, deterministic shortlist behavior.
-  return ranked.slice(0, 3).map((entry) => entry.item);
+  return ranked.slice(0, 6).map((entry) => entry.item);
 }
 
 export default function Chatbot({ tools = [], onShortlistTools }) {

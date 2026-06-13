@@ -4,7 +4,7 @@ import Chatbot from "./components/Chatbot";
 import "./App.css";
 
 const GOOGLE_SHEET_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc1VtbNHQARWS48OdifG6WKlKkHZHamE1482aRWixKdVS9D_oom1wfKmJ3dlhXkWh1vDt-4e8tcc7O/pub?gid=1657141867&single=true&output=csv";
+  "https://docs.google.com/spreadsheets/d/1Lw1BKK8f1Z0ehbq3QiJYlXbemtnFR9XUkXuJalye9NA/edit?pli=1&gid=936919011#gid=936919011";
 
 const STAGES = [
   "Raw data",
@@ -36,9 +36,36 @@ const CATEGORY_MAP = {
 };
 
 function getSheetCsvUrl() {
-  const url = new URL(GOOGLE_SHEET_CSV_URL);
-  url.searchParams.set("ts", Date.now().toString());
-  return url.toString();
+  const inputUrl = new URL(GOOGLE_SHEET_CSV_URL);
+  const gidFromQuery = inputUrl.searchParams.get("gid");
+  const gidFromHash = inputUrl.hash.startsWith("#gid=")
+    ? inputUrl.hash.slice(5)
+    : "";
+  const gid = gidFromQuery || gidFromHash || "0";
+
+  // Support both published CSV links and edit/share links.
+  if (inputUrl.pathname.includes("/d/e/")) {
+    inputUrl.searchParams.set("output", "csv");
+    inputUrl.searchParams.set("single", "true");
+    inputUrl.searchParams.set("gid", gid);
+    inputUrl.searchParams.set("ts", Date.now().toString());
+    return inputUrl.toString();
+  }
+
+  const pathParts = inputUrl.pathname.split("/");
+  const dIndex = pathParts.indexOf("d");
+  const sheetId = dIndex >= 0 ? pathParts[dIndex + 1] : "";
+
+  if (!sheetId) {
+    inputUrl.searchParams.set("ts", Date.now().toString());
+    return inputUrl.toString();
+  }
+
+  const exportUrl = new URL(`https://docs.google.com/spreadsheets/d/${sheetId}/export`);
+  exportUrl.searchParams.set("format", "csv");
+  exportUrl.searchParams.set("gid", gid);
+  exportUrl.searchParams.set("ts", Date.now().toString());
+  return exportUrl.toString();
 }
 
 function getFunctionalCategory(tool) {

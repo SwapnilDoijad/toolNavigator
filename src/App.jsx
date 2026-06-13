@@ -4,7 +4,7 @@ import Chatbot from "./components/Chatbot";
 import "./App.css";
 
 const GOOGLE_SHEET_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/1Lw1BKK8f1Z0ehbq3QiJYlXbemtnFR9XUkXuJalye9NA/edit?pli=1&gid=936919011#gid=936919011";
+  "https://docs.google.com/spreadsheets/d/1nxm-jvRQrTQ8E6Yce7FGk5IbrWFBtcdxqsm7-dDIwGY/edit?gid=1817856931#gid=1817856931";
 
 const STAGES = [
   "Raw data",

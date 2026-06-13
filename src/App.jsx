@@ -94,7 +94,7 @@ function getDracoCommand(tool) {
 }
 
 function getCommands(tool) {
-  return getFirstValue(tool, ["command_templates", "Commands", "Command"]);
+  return getFirstValue(tool, ["command_templates", "Commands", "Command", "example_commands", "Example commands"]);
 }
 
 function getCommonUseCases(tool) {

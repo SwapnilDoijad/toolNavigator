@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { callOpenAI } from "../api/openai";
 import "./Chatbot.css";
@@ -46,6 +46,93 @@ function getTypicalInputs(tool) {
 function getTypicalOutputs(tool) {
   return tool.output_formats || tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
+
+const FIELD_HIGHLIGHTS = [
+  { pattern: /sequencing technique/gi, className: "chatbot-term-sequencing" },
+  { pattern: /\bdomain\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\btask\b/gi, className: "chatbot-term-task" },
+];
+
+function highlightFieldTerms(text) {
+  const value = String(text || "");
+  if (!value) return value;
+
+  const matches = [];
+
+  FIELD_HIGHLIGHTS.forEach(({ pattern, className }) => {
+    pattern.lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(value)) !== null) {
+      matches.push({ start: match.index, end: match.index + match[0].length, className });
+      if (match.index === pattern.lastIndex) {
+        pattern.lastIndex += 1;
+      }
+    }
+  });
+
+  if (matches.length === 0) return value;
+
+  matches.sort((a, b) => a.start - b.start || b.end - a.end);
+
+  const merged = [];
+  for (const match of matches) {
+    const previous = merged[merged.length - 1];
+    if (!previous || match.start >= previous.end) {
+      merged.push(match);
+    }
+  }
+
+  const parts = [];
+  let cursor = 0;
+
+  merged.forEach((match, index) => {
+    if (match.start > cursor) {
+      parts.push(value.slice(cursor, match.start));
+    }
+
+    parts.push(
+      <span key={`${match.className}-${match.start}-${index}`} className={match.className}>
+        {value.slice(match.start, match.end)}
+      </span>
+    );
+
+    cursor = match.end;
+  });
+
+  if (cursor < value.length) {
+    parts.push(value.slice(cursor));
+  }
+
+  return parts;
+}
+
+function renderHighlightedChildren(children) {
+  return Children.toArray(children).map((child, index) => {
+    if (typeof child === "string" || typeof child === "number") {
+      return <Fragment key={index}>{highlightFieldTerms(child)}</Fragment>;
+    }
+
+    if (!isValidElement(child) || !child.props?.children) {
+      return child;
+    }
+
+    return cloneElement(child, {
+      children: renderHighlightedChildren(child.props.children),
+    });
+  });
+}
+
+const markdownComponents = {
+  p: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  li: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  td: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  th: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  blockquote: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  h1: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  h2: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  h3: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  h4: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+};
 
 function normalizeShortlistText(text) {
   return ` ${String(text || "")
@@ -338,7 +425,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hi! I'm your AI assistant. How can I help you with your tools and workflows today?",
+      text: "Hi! I'm your AI tool assistant. Provide me sequencing technique (for e.g. Illumina or Nanopore), domain (for e.g. bacteria or virus) and task (for e.g. assembly or annotation) and I can recommend tools and workflows for you. For example, you can ask: 'How can I assemble nanopore reads for bacteria?'",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -645,7 +732,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
                   >
                     <div className="chatbot-message-content">
                       {message.sender === "bot" ? (
-                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                        <ReactMarkdown components={markdownComponents}>{message.text}</ReactMarkdown>
                       ) : (
                         message.text
                       )}

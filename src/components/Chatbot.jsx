@@ -212,22 +212,24 @@ function formatToolDetails(tool) {
   const helpCommand = tool.helpCommand || tool.show_help || tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "NA";
 
   return [
-    `**Tool:** ${name}`,
-    `**Description:** ${description}`,
+    `### ${name}`,
+    `**Description**`,
+    description,
+    `**Help command**`,
     helpCommand !== "NA"
-      ? ["**Help command:**", "```bash", helpCommand, "```"].join("\n")
-      : "**Help command:** Draco command: not listed in the sheet",
+      ? ["```bash", helpCommand, "```"].join("\n")
+      : "Draco command: not listed in the sheet",
   ].join("\n\n");
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTool = findPrimaryMentionedShortlistedTool(responseText, shortlistedTools);
+  const matchedTools = findMentionedShortlistedTools(responseText, shortlistedTools);
 
-  if (!matchedTool) {
+  if (matchedTools.length === 0) {
     return responseText;
   }
 
-  return `${responseText}\n\n${formatToolDetails(matchedTool)}`;
+  return `${responseText}\n\n${matchedTools.map((tool) => formatToolDetails(tool)).join("\n\n---\n\n")}`;
 }
 
 function normalizeText(text) {

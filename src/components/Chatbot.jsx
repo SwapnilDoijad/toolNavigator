@@ -264,25 +264,6 @@ function buildToolsContext(tools, userInput) {
   const queryText = normalizeText(userInput);
   const queryTokens = [...new Set(tokenize(userInput, true))];
 
-  const directMatch = tools.find((tool) => findDirectToolMatch(tool, queryTokens));
-  if (directMatch) {
-    return [
-      {
-        name: directMatch.tool_name || directMatch.Name || "NA",
-        version: directMatch.version || directMatch.Version || "NA",
-        additionalInfo: getToolAdditionalInfo(directMatch) || "NA",
-        category: getCategory(directMatch) || "NA",
-        supportedTechnologies: getSupportedTechnologies(directMatch) || "NA",
-        functionalCategory: getFunctionalCategory(directMatch) || "NA",
-        secondaryFunction: getSecondaryFunction(directMatch) || "NA",
-        description: directMatch.description || directMatch.Description || "NA",
-        commonUseCases: getCommonUseCases(directMatch) || "NA",
-        helpCommand: getDracoCommand(directMatch) || "NA",
-        url: directMatch.tool_link || directMatch.URL || "",
-      },
-    ];
-  }
-
   const scored = tools.map((tool) => {
     const nameText = tool.tool_name || tool.Name || "";
     const aliasesText = getToolAliases(tool);
@@ -298,6 +279,11 @@ function buildToolsContext(tools, userInput) {
     const secondaryTokens = buildSearchableTokens(normalizeText(secondaryMatchText));
 
     let score = 0;
+
+    if (findDirectToolMatch(tool, queryTokens)) {
+      // Direct name/alias hits should boost ranking, not short-circuit the shortlist.
+      score += 1.6;
+    }
 
     for (const queryToken of queryTokens) {
       const variants = getTokenVariants(queryToken);

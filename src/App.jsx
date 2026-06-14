@@ -313,11 +313,15 @@ export default function App() {
   }, [tools]);
 
   const filteredGroups = useMemo(() => {
-    const loweredQuery = query.toLowerCase();
+    const loweredQuery = query
+      .toLowerCase()
+      .replace(/\btools?\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     const shortlistSet = new Set(chatbotShortlistKeys);
 
     return toolGroups.filter((group) => {
-      const matchesSearch = group.searchText.includes(loweredQuery);
+      const matchesSearch = !loweredQuery || group.searchText.includes(loweredQuery);
       const matchesLane = lane === "All" || group.lanes.includes(lane);
       const matchesChatbotShortlist = shortlistSet.size === 0 || shortlistSet.has(group.key);
       return matchesSearch && matchesLane && matchesChatbotShortlist;

@@ -19,6 +19,10 @@ function getToolAdditionalInfo(tool) {
   return tool.tool_additional_info || tool.Tool_additional_info || tool["Tool additional info"] || "";
 }
 
+function getToolAliases(tool) {
+  return tool.tool_alias || tool.Tool_alias || tool["Tool alias"] || tool.tool_aliases || tool.Tool_aliases || tool["Tool aliases"] || "";
+}
+
 function getSupportedTechnologies(tool) {
   return tool.supported_technologies || tool.Supported_technologies || tool["Supported technologies"] || "";
 }
@@ -90,6 +94,10 @@ const STOP_WORDS = new Set([
   "can",
   "for",
   "from",
+  "find",
+  "get",
+  "give",
+  "have",
   "how",
   "i",
   "in",
@@ -98,9 +106,12 @@ const STOP_WORDS = new Set([
   "of",
   "on",
   "or",
+  "search",
   "that",
   "the",
   "this",
+  "tool",
+  "tools",
   "to",
   "what",
   "which",
@@ -209,28 +220,95 @@ function bestVariantScore(variants, toolTokens, toolText) {
   return best;
 }
 
+function getNormalizedValues(text) {
+  return tokenize(text, true);
+}
+
+function buildSearchableTokens(text) {
+  return new Set(tokenize(text));
+}
+
+function fieldTextIncludesAny(fieldText, variants) {
+  const normalizedFieldText = normalizeText(fieldText);
+  return variants.some((variant) => variant && normalizedFieldText.includes(variant));
+}
+
+function findDirectToolMatch(tool, queryTokens) {
+  const name = tool.tool_name || tool.Name || "";
+  const aliases = getToolAliases(tool);
+  const nameTokens = new Set(getNormalizedValues(name));
+  const aliasTokens = new Set(getNormalizedValues(aliases));
+
+  for (const queryToken of queryTokens) {
+    const variants = getTokenVariants(queryToken);
+
+    if (variants.some((variant) => nameTokens.has(variant))) {
+      return true;
+    }
+
+    if (variants.some((variant) => aliasTokens.has(variant))) {
+      return true;
+    }
+
+    if (fieldTextIncludesAny(name, variants) || fieldTextIncludesAny(aliases, variants)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function buildToolsContext(tools, userInput) {
   if (!Array.isArray(tools) || tools.length === 0) return [];
 
   const queryText = normalizeText(userInput);
   const queryTokens = [...new Set(tokenize(userInput, true))];
 
+  const directMatch = tools.find((tool) => findDirectToolMatch(tool, queryTokens));
+  if (directMatch) {
+    return [
+      {
+        name: directMatch.tool_name || directMatch.Name || "NA",
+        version: directMatch.version || directMatch.Version || "NA",
+        additionalInfo: getToolAdditionalInfo(directMatch) || "NA",
+        category: getCategory(directMatch) || "NA",
+        supportedTechnologies: getSupportedTechnologies(directMatch) || "NA",
+        functionalCategory: getFunctionalCategory(directMatch) || "NA",
+        secondaryFunction: getSecondaryFunction(directMatch) || "NA",
+        description: directMatch.description || directMatch.Description || "NA",
+        commonUseCases: getCommonUseCases(directMatch) || "NA",
+        helpCommand: getDracoCommand(directMatch) || "NA",
+        url: directMatch.tool_link || directMatch.URL || "",
+      },
+    ];
+  }
+
   const scored = tools.map((tool) => {
+    const nameText = tool.tool_name || tool.Name || "";
+    const aliasesText = getToolAliases(tool);
+    const primaryMatchText = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${getSupportedTechnologies(tool)}`;
+    const secondaryMatchText = `${getSecondaryFunction(tool)} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`;
     const searchableText = normalizeText(
-      `${tool.tool_name || tool.Name || ""} ${getToolAdditionalInfo(tool)} ${getCategory(tool)} ${getSupportedTechnologies(tool)} ${getFunctionalCategory(tool)} ${getSecondaryFunction(tool)} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`
+      `${nameText} ${aliasesText} ${getToolAdditionalInfo(tool)} ${primaryMatchText} ${secondaryMatchText}`
     );
-    const toolTokens = new Set(tokenize(searchableText));
-    const nameTokens = new Set(tokenize(tool.tool_name || tool.Name || ""));
+    const toolTokens = buildSearchableTokens(searchableText);
+    const nameTokens = new Set(getNormalizedValues(nameText));
+    const aliasTokens = new Set(getNormalizedValues(aliasesText));
+    const primaryTokens = buildSearchableTokens(normalizeText(primaryMatchText));
+    const secondaryTokens = buildSearchableTokens(normalizeText(secondaryMatchText));
 
     let score = 0;
 
     for (const queryToken of queryTokens) {
       const variants = getTokenVariants(queryToken);
-      const tokenScore = bestVariantScore(variants, toolTokens, searchableText);
+
+      const primaryScore = bestVariantScore(variants, primaryTokens, normalizeText(primaryMatchText));
+      const secondaryScore = bestVariantScore(variants, secondaryTokens, normalizeText(secondaryMatchText));
+      const tokenScore = Math.max(primaryScore * 2, secondaryScore);
       score += tokenScore;
 
       for (const variant of variants) {
-        if (nameTokens.has(variant)) {
+        if (nameTokens.has(variant) || aliasTokens.has(variant)) {
           score += 0.4;
           break;
         }

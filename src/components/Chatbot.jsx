@@ -138,15 +138,15 @@ function renderHighlightedChildren(children) {
 }
 
 const markdownComponents = {
-  p: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  li: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  td: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  th: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  blockquote: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  h1: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  h2: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  h3: ({ children }) => <>{renderHighlightedChildren(children)}</>,
-  h4: ({ children }) => <>{renderHighlightedChildren(children)}</>,
+  p: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  li: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  td: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  th: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  blockquote: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  h1: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  h2: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  h3: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
+  h4: ({ children }) => <div>{renderHighlightedChildren(children)}</div>,
 };
 
 function normalizeShortlistText(text) {
@@ -187,6 +187,25 @@ function findMentionedShortlistedTools(responseText, shortlistedTools) {
   });
 }
 
+function findPrimaryMentionedShortlistedTool(responseText, shortlistedTools) {
+  const normalizedResponse = normalizeShortlistText(responseText);
+  let bestTool = null;
+  let bestIndex = Number.POSITIVE_INFINITY;
+
+  shortlistedTools.forEach((tool) => {
+    const name = getToolDisplayName(tool);
+    if (!name) return;
+
+    const index = normalizedResponse.indexOf(normalizeShortlistText(name));
+    if (index !== -1 && index < bestIndex) {
+      bestTool = tool;
+      bestIndex = index;
+    }
+  });
+
+  return bestTool;
+}
+
 function formatToolDetails(tool) {
   const name = getToolDisplayName(tool) || "NA";
   const description = tool.description || tool.Description || "NA";
@@ -202,13 +221,13 @@ function formatToolDetails(tool) {
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTools = findMentionedShortlistedTools(responseText, shortlistedTools);
+  const matchedTool = findPrimaryMentionedShortlistedTool(responseText, shortlistedTools);
 
-  if (matchedTools.length === 0) {
+  if (!matchedTool) {
     return responseText;
   }
 
-  return `${responseText}\n\n${matchedTools.map(formatToolDetails).join("\n\n")}`;
+  return `${responseText}\n\n${formatToolDetails(matchedTool)}`;
 }
 
 function normalizeText(text) {
@@ -668,10 +687,13 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       };
 
       if (typeof onShortlistTools === "function") {
+        const identifiedToolKey = extractShortlistedToolKeys(response, shortlistedTools)[0];
         onShortlistTools(
-          shortlistedToolNames.length > 0
-            ? shortlistedToolNames.map((name) => name.toLowerCase())
-            : extractShortlistedToolKeys(response, tools)
+          identifiedToolKey
+            ? [identifiedToolKey]
+            : shortlistedToolNames.length > 0
+              ? [shortlistedToolNames[0].toLowerCase()]
+              : extractShortlistedToolKeys(response, tools).slice(0, 1)
         );
       }
 

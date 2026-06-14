@@ -375,9 +375,39 @@
 .chatbot-message-bot .chatbot-message-content h1,
 .chatbot-message-bot .chatbot-message-content h2,
 .chatbot-message-bot .chatbot-message-content h3 {
-  margin: 8px 0 4px 0;
+  margin: 12px 0 8px 0;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.chatbot-message-bot .chatbot-message-content h3 {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid #dbe7f4;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  box-shadow: 0 1px 2px rgba(2, 26, 62, 0.08);
+}
+
+.chatbot-message-bot .chatbot-message-content hr {
+  border: 0;
+  border-top: 1px solid #dbe7f4;
+  margin: 14px 0;
+}
+
+.chatbot-message-bot .chatbot-message-content > p,
+.chatbot-message-bot .chatbot-message-content > div > p {
+  margin: 0 0 10px 0;
+}
+
+.chatbot-message-bot .chatbot-message-content > p:last-child,
+.chatbot-message-bot .chatbot-message-content > div > p:last-child {
+  margin-bottom: 0;
+}
+
+.chatbot-message-bot .chatbot-message-content pre {
+  border: 1px solid #dbe7f4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .chatbot-message-error .chatbot-message-content {

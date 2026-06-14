@@ -47,10 +47,25 @@ function getTypicalOutputs(tool) {
   return tool.output_formats || tool.Typical_outputs || tool["Typical outputs"] || tool.TypicalOutputs || "";
 }
 
-const FIELD_HIGHLIGHTS = [
-  { pattern: /sequencing technique/gi, className: "chatbot-term-sequencing" },
-  { pattern: /\bdomain\b/gi, className: "chatbot-term-domain" },
-  { pattern: /\btask\b/gi, className: "chatbot-term-task" },
+const TERM_HIGHLIGHTS = [
+  { pattern: /\billumina\b/gi, className: "chatbot-term-sequencing" },
+  { pattern: /\bnanopore\b/gi, className: "chatbot-term-sequencing" },
+  { pattern: /\bpacbio\b/gi, className: "chatbot-term-sequencing" },
+  { pattern: /\bhifi\b/gi, className: "chatbot-term-sequencing" },
+  { pattern: /\bbacteria\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bvirus\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bphage\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bfungi\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bmetagenome\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bmicrobiome\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bvirome\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\beukaryote\b/gi, className: "chatbot-term-domain" },
+  { pattern: /\bassembly\b/gi, className: "chatbot-term-task" },
+  { pattern: /\bannotation\b/gi, className: "chatbot-term-task" },
+  { pattern: /\bpolishing\b/gi, className: "chatbot-term-task" },
+  { pattern: /\bbinning\b/gi, className: "chatbot-term-task" },
+  { pattern: /\bmapping\b/gi, className: "chatbot-term-task" },
+  { pattern: /\bvisualization\b/gi, className: "chatbot-term-task" },
 ];
 
 function highlightFieldTerms(text) {
@@ -59,7 +74,7 @@ function highlightFieldTerms(text) {
 
   const matches = [];
 
-  FIELD_HIGHLIGHTS.forEach(({ pattern, className }) => {
+  TERM_HIGHLIGHTS.forEach(({ pattern, className }) => {
     pattern.lastIndex = 0;
     let match;
     while ((match = pattern.exec(value)) !== null) {

@@ -307,6 +307,8 @@
   background: #ffffff;
   color: #1f2937;
   border: 1px solid #dde6f2;
+  border-bottom-left-radius: 4px;
+}
 
 .chatbot-term-sequencing,
 .chatbot-term-domain,
@@ -330,8 +332,6 @@
 .chatbot-term-task {
   color: #b91c1c;
   background: rgba(185, 28, 28, 0.12);
-}
-  border-bottom-left-radius: 4px;
 }
 
 /* Markdown rendering inside bot messages */

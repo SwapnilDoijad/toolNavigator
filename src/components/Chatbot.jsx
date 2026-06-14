@@ -430,7 +430,7 @@ function buildToolsContext(tools, userInput) {
   const ranked = source.sort((a, b) => b.score - a.score);
 
   // Keep only the highest-scoring matches for concise, deterministic shortlist behavior.
-  return ranked.slice(0, 6).map((entry) => entry.item);
+  return ranked.slice(0, 10).map((entry) => entry.item);
 }
 
 export default function Chatbot({ tools = [], onShortlistTools }) {
@@ -602,6 +602,11 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
     try {
       const toolsContext = buildToolsContext(tools, input);
+      const shortlistedToolNames = [...new Set(
+        toolsContext
+          .map((tool) => String(tool.name || "").trim())
+          .filter(Boolean)
+      )];
 
       // Call OpenAI API with sheet-first context
       const response = await callOpenAI(
@@ -611,7 +616,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         })),
         input,
         {
-          toolsContext,
+          toolsContext: shortlistedToolNames,
           totalToolCount: tools.length,
         }
       );
@@ -624,14 +629,10 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       };
 
       if (typeof onShortlistTools === "function") {
-        const matchedToolKeys = [...new Set(
-          toolsContext
-            .map((tool) => String(tool.name || "").trim().toLowerCase())
-            .filter(Boolean)
-        )];
-
         onShortlistTools(
-          matchedToolKeys.length > 0 ? matchedToolKeys : extractShortlistedToolKeys(response, tools)
+          shortlistedToolNames.length > 0
+            ? shortlistedToolNames.map((name) => name.toLowerCase())
+            : extractShortlistedToolKeys(response, tools)
         );
       }
 

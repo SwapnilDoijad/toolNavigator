@@ -191,16 +191,14 @@ function formatToolDetails(tool) {
   const name = getToolDisplayName(tool) || "NA";
   const description = tool.description || tool.Description || "NA";
   const helpCommand = tool.helpCommand || tool.show_help || tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "NA";
-  const helpCommandSection =
-    helpCommand !== "NA"
-      ? ["**Help command:**", "```bash", helpCommand, "```"].join("\n")
-      : "Draco command: not listed in the sheet";
 
   return [
     `**Tool:** ${name}`,
     `**Description:** ${description}`,
-    helpCommandSection,
-  ].join("\n");
+    helpCommand !== "NA"
+      ? ["**Help command:**", "```bash", helpCommand, "```"].join("\n")
+      : "**Help command:** Draco command: not listed in the sheet",
+  ].join("\n\n");
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {

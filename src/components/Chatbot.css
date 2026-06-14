@@ -314,24 +314,18 @@
 .chatbot-term-domain,
 .chatbot-term-task {
   font-weight: 700;
-  padding: 0 5px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 
 .chatbot-term-sequencing {
   color: #1d4ed8;
-  background: rgba(29, 78, 216, 0.12);
 }
 
 .chatbot-term-domain {
   color: #15803d;
-  background: rgba(21, 128, 61, 0.12);
 }
 
 .chatbot-term-task {
   color: #b91c1c;
-  background: rgba(185, 28, 28, 0.12);
 }
 
 /* Markdown rendering inside bot messages */

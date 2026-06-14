@@ -648,7 +648,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setMessages([
       {
         id: 1,
-        text: "Hi! I'm your AI assistant. Ask me about tools and workflows today? For example, you can ask: 'How can I assemble nanopore reads?'",
+        text: "Hi! I'm your AI tool assistant. Provide me sequencing technique (for e.g. Illumina or Nanopore), domain (for e.g. bacteria or virus) and task (for e.g. assembly or annotation) and I can recommend tools and workflows for you. For example, you can ask: 'How can I assemble nanopore reads for bacteria?'",
         sender: "bot",
         timestamp: new Date(),
       },

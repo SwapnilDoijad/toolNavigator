@@ -174,6 +174,45 @@ function extractShortlistedToolKeys(responseText, tools) {
     .map(([key]) => key);
 }
 
+function getToolDisplayName(tool) {
+  return String(tool.name || tool.tool_name || tool.Name || "").trim();
+}
+
+function findMentionedShortlistedTools(responseText, shortlistedTools) {
+  const normalizedResponse = normalizeShortlistText(responseText);
+
+  return shortlistedTools.filter((tool) => {
+    const name = getToolDisplayName(tool);
+    return name && normalizedResponse.includes(normalizeShortlistText(name));
+  });
+}
+
+function formatToolDetails(tool) {
+  const name = getToolDisplayName(tool) || "NA";
+  const description = tool.description || tool.Description || "NA";
+  const helpCommand = tool.helpCommand || tool.show_help || tool.Call_tool || tool["Call tool"] || tool.Draco_command || tool["Draco command"] || "NA";
+  const helpCommandSection =
+    helpCommand !== "NA"
+      ? ["Help command:", "```bash", helpCommand, "```"].join("\n")
+      : "Draco command: not listed in the sheet";
+
+  return [
+    `### ${name}`,
+    `Description: ${description}`,
+    helpCommandSection,
+  ].join("\n");
+}
+
+function enrichResponseWithToolDetails(responseText, shortlistedTools) {
+  const matchedTools = findMentionedShortlistedTools(responseText, shortlistedTools);
+
+  if (matchedTools.length === 0) {
+    return responseText;
+  }
+
+  return `${responseText}\n\n${matchedTools.map(formatToolDetails).join("\n\n")}`;
+}
+
 function normalizeText(text) {
   return String(text || "")
     .toLowerCase()
@@ -601,9 +640,9 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
 
     try {
-      const toolsContext = buildToolsContext(tools, input);
+      const shortlistedTools = buildToolsContext(tools, input);
       const shortlistedToolNames = [...new Set(
-        toolsContext
+        shortlistedTools
           .map((tool) => String(tool.name || "").trim())
           .filter(Boolean)
       )];
@@ -621,9 +660,11 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         }
       );
 
+      const enrichedResponse = enrichResponseWithToolDetails(response, shortlistedTools);
+
       const botMessage = {
         id: Date.now() + 1,
-        text: response,
+        text: enrichedResponse,
         sender: "bot",
         timestamp: new Date(),
       };

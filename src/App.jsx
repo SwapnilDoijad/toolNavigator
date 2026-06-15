@@ -492,17 +492,11 @@ export default function App() {
             <dt>Version</dt>
             <dd>{selectedTool.version || selectedTool.Version || "NA"}</dd>
 
-            <dt>Status</dt>
-            <dd>{getDisplayStatus(selectedTool) || "NA"}</dd>
-
             <dt>Category</dt>
             <dd>{getCategory(selectedTool) || "NA"}</dd>
 
             <dt>Function</dt>
             <dd>{getFunctionalCategory(selectedTool) || "NA"}</dd>
-
-            <dt>Installed on</dt>
-            <dd>{selectedTool.installed_on || selectedTool.Installed_on || "NA"}</dd>
           </dl>
 
           {getDracoCommand(selectedTool) && (

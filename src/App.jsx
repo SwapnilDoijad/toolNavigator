@@ -234,9 +234,10 @@ function getToolSearchText(tool) {
 }
 
 function detectStage(tool) {
+  const primaryFunction = normalizeText(getPrimaryFunction(tool));
   const text = `${getCategory(tool)} ${getPrimaryFunction(tool)} ${tool.description || tool.Description}`.toLowerCase();
 
-  if (text.includes("preprocessing")) return "Raw data";
+  if (primaryFunction === "preprocessing") return "Raw data";
   if (text.includes("quality") || text.includes("qc") || text.includes("trim")) return "QC";
   if (text.includes("assembl")) return "Assembly";
   if (text.includes("taxonom") || text.includes("classification")) return "Taxonomy";

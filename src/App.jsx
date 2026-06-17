@@ -72,6 +72,10 @@ function getFunctionalCategory(tool) {
   return tool.primary_function || tool.Primary_function || tool["Primary function"] || tool.FunctionalCategory || tool.Functional_Category || tool.Usage || "";
 }
 
+function getPrimaryFunction(tool) {
+  return tool.primary_function || tool.Primary_function || tool["Primary function"] || "";
+}
+
 function normalizeHeaderKey(key) {
   return String(key || "")
     .toLowerCase()
@@ -230,7 +234,7 @@ function getToolSearchText(tool) {
 }
 
 function detectStage(tool) {
-  const text = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${tool.description || tool.Description}`.toLowerCase();
+  const text = `${getCategory(tool)} ${getPrimaryFunction(tool)} ${tool.description || tool.Description}`.toLowerCase();
 
   if (text.includes("preprocessing")) return "Raw data";
   if (text.includes("quality") || text.includes("qc") || text.includes("trim")) return "QC";

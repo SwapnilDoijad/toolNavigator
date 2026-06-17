@@ -441,15 +441,13 @@ function buildToolsContext(tools, userInput) {
     const nameText = tool.tool_name || tool.Name || "";
     const aliasesText = getToolAliases(tool);
     const primaryMatchText = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${getSupportedTechnologies(tool)}`;
-    const secondaryMatchText = `${getSecondaryFunction(tool)} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`;
     const searchableText = normalizeText(
-      `${nameText} ${aliasesText} ${getToolAdditionalInfo(tool)} ${primaryMatchText} ${secondaryMatchText}`
+      `${nameText} ${aliasesText} ${getToolAdditionalInfo(tool)} ${primaryMatchText} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`
     );
     const toolTokens = buildSearchableTokens(searchableText);
     const nameTokens = new Set(getNormalizedValues(nameText));
     const aliasTokens = new Set(getNormalizedValues(aliasesText));
     const primaryTokens = buildSearchableTokens(normalizeText(primaryMatchText));
-    const secondaryTokens = buildSearchableTokens(normalizeText(secondaryMatchText));
 
     let score = 0;
 
@@ -462,8 +460,7 @@ function buildToolsContext(tools, userInput) {
       const variants = getTokenVariants(queryToken);
 
       const primaryScore = bestVariantScore(variants, primaryTokens, normalizeText(primaryMatchText));
-      const secondaryScore = bestVariantScore(variants, secondaryTokens, normalizeText(secondaryMatchText));
-      const tokenScore = Math.max(primaryScore * 2, secondaryScore);
+      const tokenScore = primaryScore * 2;
       score += tokenScore;
 
       for (const variant of variants) {
@@ -487,7 +484,6 @@ function buildToolsContext(tools, userInput) {
         category: getCategory(tool) || "NA",
         supportedTechnologies: getSupportedTechnologies(tool) || "NA",
         functionalCategory: getFunctionalCategory(tool) || "NA",
-        secondaryFunction: getSecondaryFunction(tool) || "NA",
         description: tool.description || tool.Description || "NA",
         commonUseCases: getCommonUseCases(tool) || "NA",
         helpCommand: getDracoCommand(tool) || "NA",

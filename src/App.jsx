@@ -234,7 +234,7 @@ function getToolSearchText(tool) {
 }
 
 function detectStage(tool) {
-  const primaryFunction = normalizeText(getPrimaryFunction(tool));
+  const primaryFunction = String(getPrimaryFunction(tool) || "").trim().toLowerCase();
   const text = `${getCategory(tool)} ${getPrimaryFunction(tool)} ${tool.description || tool.Description}`.toLowerCase();
 
   if (primaryFunction === "preprocessing") return "Raw data";

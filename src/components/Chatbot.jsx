@@ -12,7 +12,13 @@ function getSecondaryFunction(tool) {
 }
 
 function getCategory(tool) {
-  return tool.domains || tool.Category || tool.Domain_Category || "";
+  return (
+    tool.primary_domain ||
+    tool.domains ||
+    tool.Category ||
+    tool.Domain_Category ||
+    ""
+  );
 }
 
 function getToolAdditionalInfo(tool) {
@@ -24,7 +30,14 @@ function getToolAliases(tool) {
 }
 
 function getSupportedTechnologies(tool) {
-  return tool.supported_technologies || tool.Supported_technologies || tool["Supported technologies"] || "";
+  return (
+    tool.primary_sequencing_technologies ||
+    tool.sequencing_technologies ||
+    tool.supported_technologies ||
+    tool.Supported_technologies ||
+    tool["Supported technologies"] ||
+    ""
+  );
 }
 
 function getCommands(tool) {

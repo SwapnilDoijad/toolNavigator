@@ -109,6 +109,15 @@ function getTypicalOutputs(tool) {
   return getFirstValue(tool, ["output_formats", "Typical_outputs", "Typical outputs", "TypicalOutputs"]);
 }
 
+function getSequencingTechnologies(tool) {
+  return getFirstValue(tool, [
+    "primary_sequencing_technologies",
+    "sequencing_technologies",
+    "supported_technologies",
+    "Supported technologies",
+  ]);
+}
+
 function splitSemicolonLines(value) {
   if (!value) return [];
 
@@ -164,7 +173,7 @@ function formatCommandsForDisplay(commandsText) {
 }
 
 function getCategory(tool) {
-  return tool.domains || tool.Category || tool.Domain_Category || "";
+  return getFirstValue(tool, ["primary_domain", "domains", "Category", "Domain_Category"]);
 }
 
 function getDisplayStatus(tool) {
@@ -206,6 +215,7 @@ function getToolSearchText(tool) {
     ${tool.version || tool.Version}
     ${tool.status || tool.Status}
     ${getCategory(tool)}
+    ${getSequencingTechnologies(tool)}
     ${getFunctionalCategory(tool)}
     ${tool.description || tool.Description}
     ${tool.installed_on || tool.Installed_on}

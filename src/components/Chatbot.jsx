@@ -191,6 +191,24 @@ function getToolDisplayName(tool) {
   return String(tool.name || tool.tool_name || tool.Name || "").trim();
 }
 
+function dedupeToolsByDisplayName(tools) {
+  if (!Array.isArray(tools) || tools.length === 0) return [];
+
+  const uniqueTools = new Map();
+
+  tools.forEach((tool) => {
+    const name = getToolDisplayName(tool);
+    if (!name) return;
+
+    const key = name.toLowerCase();
+    if (!uniqueTools.has(key)) {
+      uniqueTools.set(key, tool);
+    }
+  });
+
+  return [...uniqueTools.values()];
+}
+
 function findMentionedShortlistedTools(responseText, shortlistedTools) {
   const normalizedResponse = normalizeShortlistText(responseText);
 
@@ -236,7 +254,7 @@ function formatToolDetails(tool) {
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTools = findMentionedShortlistedTools(responseText, shortlistedTools);
+  const matchedTools = dedupeToolsByDisplayName(findMentionedShortlistedTools(responseText, shortlistedTools));
 
   if (matchedTools.length === 0) {
     return responseText;
@@ -573,7 +591,7 @@ function buildToolsContext(tools, userInput) {
   const ranked = source.sort((a, b) => b.score - a.score);
 
   // Keep only the highest-scoring matches for concise, deterministic shortlist behavior.
-  return ranked.slice(0, 20).map((entry) => entry.item);
+  return dedupeToolsByDisplayName(ranked.slice(0, 20).map((entry) => entry.item));
 }
 
 export default function Chatbot({ tools = [], onShortlistTools }) {
@@ -744,7 +762,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
 
     try {
-      const shortlistedTools = buildToolsContext(tools, input);
+      const shortlistedTools = dedupeToolsByDisplayName(buildToolsContext(tools, input));
       const shortlistedToolNames = [...new Set(
         shortlistedTools
           .map((tool) => String(tool.name || "").trim())

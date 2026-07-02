@@ -293,9 +293,12 @@ function enrichResponseWithToolDetails(responseText, shortlistedTools) {
     return responseText;
   }
 
+  const topPicksText = matchedTools
+    .map((tool, index) => `${index + 1}. ${getToolDisplayName(tool)}`)
+    .join("\n");
   const commandTiles = matchedTools.slice(0, 3).map((tool) => formatToolDetails(tool)).join("\n\n---\n\n");
 
-  return `${responseText}\n\n${commandTiles}`;
+  return `${responseText}\n\nTop picks (most common for phage annotation):\n${topPicksText}\n\n${commandTiles}`;
 }
 
 function escapeRegExp(value) {

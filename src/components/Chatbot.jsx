@@ -296,8 +296,9 @@ function enrichResponseWithToolDetails(responseText, shortlistedTools) {
     .join("\n");
 
   const guidanceLine = "These are the tools GPT ranked highest for this query, so they are the ones most often used for phage annotation workflows in this context.";
+  const commandTiles = matchedTools.slice(0, 3).map((tool) => formatToolDetails(tool)).join("\n\n---\n\n");
 
-  return `${responseText}\n\nQuick guidance\n${topToolsText}\n\n${guidanceLine}`;
+  return `${responseText}\n\nQuick guidance\n${topToolsText}\n\n${guidanceLine}\n\n${commandTiles}`;
 }
 
 function escapeRegExp(value) {

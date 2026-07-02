@@ -237,6 +237,26 @@ function findPrimaryMentionedShortlistedTool(responseText, shortlistedTools) {
   return bestTool;
 }
 
+function getMentionedToolsInResponseOrder(responseText, shortlistedTools, limit = 3) {
+  const normalizedResponse = normalizeShortlistText(responseText);
+
+  const rankedTools = shortlistedTools
+    .map((tool) => {
+      const name = getToolDisplayName(tool);
+      if (!name) return null;
+
+      const index = normalizedResponse.indexOf(normalizeShortlistText(name));
+      if (index === -1) return null;
+
+      return { tool, index };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.index - b.index)
+    .map((entry) => entry.tool);
+
+  return dedupeToolsByDisplayName(rankedTools).slice(0, limit);
+}
+
 function formatToolDetails(tool) {
   const name = getToolDisplayName(tool) || "NA";
   const description = tool.description || tool.Description || "NA";
@@ -266,7 +286,7 @@ function cleanAssistantResponse(responseText) {
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTools = dedupeToolsByDisplayName(findMentionedShortlistedTools(responseText, shortlistedTools)).slice(0, 3);
+  const matchedTools = getMentionedToolsInResponseOrder(responseText, shortlistedTools, 3);
 
   if (matchedTools.length === 0) {
     return responseText;
@@ -796,16 +816,19 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
 
       const responseWithBoldListNames = boldToolNamesInListItems(response, tools);
       const cleanedResponse = cleanAssistantResponse(responseWithBoldListNames);
+      const enrichedResponse = enrichResponseWithToolDetails(cleanedResponse, shortlistedTools);
 
       const botMessage = {
         id: Date.now() + 1,
-        text: cleanedResponse,
+        text: enrichedResponse,
         sender: "bot",
         timestamp: new Date(),
       };
 
       if (typeof onShortlistTools === "function") {
-        const identifiedToolKeys = extractShortlistedToolKeys(response, shortlistedTools);
+        const identifiedToolKeys = getMentionedToolsInResponseOrder(response, shortlistedTools)
+          .map((tool) => String(tool.name || "").trim().toLowerCase())
+          .filter(Boolean);
         const fallbackToolKeys = shortlistedToolNames.map((name) => name.toLowerCase());
         onShortlistTools(
           identifiedToolKeys.length > 0

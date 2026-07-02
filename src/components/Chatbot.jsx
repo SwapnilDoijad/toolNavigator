@@ -285,13 +285,19 @@ function cleanAssistantResponse(responseText) {
 }
 
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTools = getMentionedToolsInResponseOrder(responseText, shortlistedTools, 3);
+  const matchedTools = getMentionedToolsInResponseOrder(responseText, shortlistedTools, 5);
 
   if (matchedTools.length === 0) {
     return responseText;
   }
 
-  return `${responseText}\n\n${matchedTools.map((tool) => formatToolDetails(tool)).join("\n\n---\n\n")}`;
+  const topToolsText = matchedTools
+    .map((tool, index) => `${index + 1}. ${getToolDisplayName(tool)}`)
+    .join("\n");
+
+  const guidanceLine = "These are the tools GPT ranked highest for this query, so they are the ones most often used for phage annotation workflows in this context.";
+
+  return `${responseText}\n\nQuick guidance\n${topToolsText}\n\n${guidanceLine}`;
 }
 
 function escapeRegExp(value) {

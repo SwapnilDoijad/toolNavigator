@@ -253,8 +253,19 @@ function formatToolDetails(tool) {
   ].join("\n\n");
 }
 
+function cleanAssistantResponse(responseText) {
+  return String(responseText || "")
+    .replace(/^\s*Tool names \(from the catalog\):\s*\n?/gim, "")
+    .replace(/^\s*Supporting details \(what each is typically used for\):\s*\n?/gim, "")
+    .replace(/^\s*Relevant tools from the catalog.*?:\s*\n?/gim, "")
+    .replace(/^\s*Quick guidance \(what each is typically used for\):\s*\n?/gim, "")
+    .replace(/^\s*If you tell me:\s*\n?/gim, "")
+    .replace(/^\s*Here are the relevant tools.*?:\s*\n?/gim, "")
+    .trim();
+}
+
 function enrichResponseWithToolDetails(responseText, shortlistedTools) {
-  const matchedTools = dedupeToolsByDisplayName(findMentionedShortlistedTools(responseText, shortlistedTools));
+  const matchedTools = dedupeToolsByDisplayName(findMentionedShortlistedTools(responseText, shortlistedTools)).slice(0, 3);
 
   if (matchedTools.length === 0) {
     return responseText;
@@ -762,7 +773,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
 
     try {
-      const shortlistedTools = dedupeToolsByDisplayName(buildToolsContext(tools, input));
+      const shortlistedTools = dedupeToolsByDisplayName(buildToolsContext(tools, input)).slice(0, 3);
       const shortlistedToolNames = [...new Set(
         shortlistedTools
           .map((tool) => String(tool.name || "").trim())
@@ -783,7 +794,8 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       );
 
       const responseWithBoldListNames = boldToolNamesInListItems(response, tools);
-      const enrichedResponse = enrichResponseWithToolDetails(responseWithBoldListNames, shortlistedTools);
+      const cleanedResponse = cleanAssistantResponse(responseWithBoldListNames);
+      const enrichedResponse = enrichResponseWithToolDetails(cleanedResponse, shortlistedTools);
 
       const botMessage = {
         id: Date.now() + 1,
@@ -797,10 +809,10 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         const fallbackToolKeys = shortlistedToolNames.map((name) => name.toLowerCase());
         onShortlistTools(
           identifiedToolKeys.length > 0
-            ? identifiedToolKeys.slice(0, 8)
+            ? identifiedToolKeys.slice(0, 3)
             : fallbackToolKeys.length > 0
-              ? fallbackToolKeys.slice(0, 8)
-              : extractShortlistedToolKeys(response, tools).slice(0, 8)
+              ? fallbackToolKeys.slice(0, 3)
+              : extractShortlistedToolKeys(response, tools).slice(0, 3)
         );
       }
 

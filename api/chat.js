@@ -52,7 +52,8 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        // model: "gpt-3.5-turbo",
+        model: "gpt-5.4-nano",
         messages,
         temperature: 0.4,
         max_tokens: 500,

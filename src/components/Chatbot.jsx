@@ -245,21 +245,6 @@ function enrichResponseWithToolDetails(responseText, shortlistedTools) {
   return `${responseText}\n\n${matchedTools.map((tool) => formatToolDetails(tool)).join("\n\n---\n\n")}`;
 }
 
-function formatRelevantToolsSection(shortlistedTools) {
-  const topTools = [...new Set(
-    shortlistedTools
-      .map((tool) => getToolDisplayName(tool))
-      .filter(Boolean)
-  )].slice(0, 5);
-
-  if (topTools.length === 0) return "";
-
-  return [
-    "**Relevant tools**",
-    ...topTools.map((name, index) => `${index + 1}. ${name}`),
-  ].join("\n");
-}
-
 function normalizeText(text) {
   return String(text || "")
     .toLowerCase()
@@ -704,14 +689,10 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       );
 
       const enrichedResponse = enrichResponseWithToolDetails(response, shortlistedTools);
-      const relevantToolsSection = formatRelevantToolsSection(shortlistedTools);
-      const finalResponse = relevantToolsSection
-        ? `${relevantToolsSection}\n\n${enrichedResponse}`
-        : enrichedResponse;
 
       const botMessage = {
         id: Date.now() + 1,
-        text: finalResponse,
+        text: enrichedResponse,
         sender: "bot",
         timestamp: new Date(),
       };

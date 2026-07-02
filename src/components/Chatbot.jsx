@@ -279,7 +279,10 @@ function cleanAssistantResponse(responseText) {
     .replace(/^\s*Supporting details \(what each is typically used for\):\s*\n?/gim, "")
     .replace(/^\s*Relevant tools from the catalog.*?:\s*\n?/gim, "")
     .replace(/^\s*Relevant tool names from the catalog.*?:\s*\n?/gim, "")
+    .replace(/^\s*Relevant catalog tools.*?:\s*\n?/gim, "")
+    .replace(/^\s*Common add-ons from the catalog.*?:\s*\n?/gim, "")
     .replace(/^\s*Quick guidance\s*\n?/gim, "")
+    .replace(/^\s*Top picks\s*\n?/gim, "")
     .replace(/^\s*If you tell me:\s*\n?/gim, "")
     .replace(/^\s*Here are the relevant tools.*?:\s*\n?/gim, "")
     .replace(/^\s*For annotating phage genomes, start with \*\*pharokka\*\* \(phage-focused annotation\), then use \*\*phageproteometree\*\* \(protein-based functional\/relationship context\) and \*\*phold\*\* \(phage identification\/annotation support\)\.?\s*/gim, "")
@@ -293,13 +296,9 @@ function enrichResponseWithToolDetails(responseText, shortlistedTools) {
     return responseText;
   }
 
-  const topPicksText = matchedTools
-    .map((tool, index) => `${index + 1}. ${getToolDisplayName(tool)}`)
-    .join("\n");
-
   const commandTiles = matchedTools.slice(0, 3).map((tool) => formatToolDetails(tool)).join("\n\n---\n\n");
 
-  return `${responseText}\n\nTop picks\n${topPicksText}\n\n${commandTiles}`;
+  return `${responseText}\n\n${commandTiles}`;
 }
 
 function escapeRegExp(value) {

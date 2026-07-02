@@ -773,7 +773,7 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
     setError(null);
 
     try {
-      const shortlistedTools = dedupeToolsByDisplayName(buildToolsContext(tools, input)).slice(0, 3);
+      const shortlistedTools = dedupeToolsByDisplayName(buildToolsContext(tools, input));
       const shortlistedToolNames = [...new Set(
         shortlistedTools
           .map((tool) => String(tool.name || "").trim())

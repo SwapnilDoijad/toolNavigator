@@ -245,6 +245,48 @@ function enrichResponseWithToolDetails(responseText, shortlistedTools) {
   return `${responseText}\n\n${matchedTools.map((tool) => formatToolDetails(tool)).join("\n\n---\n\n")}`;
 }
 
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function boldToolNamesInListItems(responseText, tools) {
+  if (!responseText) return responseText;
+  if (!Array.isArray(tools) || tools.length === 0) return responseText;
+
+  const toolNames = [...new Set(
+    tools
+      .map((tool) => getToolDisplayName(tool) || tool.tool_name || tool.Name || "")
+      .map((name) => String(name).trim())
+      .filter(Boolean)
+  )].sort((a, b) => b.length - a.length);
+
+  if (toolNames.length === 0) return responseText;
+
+  return responseText
+    .split("\n")
+    .map((line) => {
+      const listMatch = line.match(/^(\s*(?:[-*+]|\d+\.)\s+)(.+)$/);
+      if (!listMatch) return line;
+
+      const prefix = listMatch[1];
+      const content = listMatch[2];
+
+      for (const name of toolNames) {
+        const escapedName = escapeRegExp(name);
+        const startsWithName = new RegExp(`^${escapedName}(?=$|\\s|[:;,.()\\-])`, "i");
+
+        if (!startsWithName.test(content)) continue;
+        if (/^\*\*.+\*\*/.test(content)) return line;
+
+        const matchedName = content.slice(0, name.length);
+        return `${prefix}**${matchedName}**${content.slice(name.length)}`;
+      }
+
+      return line;
+    })
+    .join("\n");
+}
+
 function normalizeText(text) {
   return String(text || "")
     .toLowerCase()
@@ -688,7 +730,8 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
         }
       );
 
-      const enrichedResponse = enrichResponseWithToolDetails(response, shortlistedTools);
+      const responseWithBoldListNames = boldToolNamesInListItems(response, tools);
+      const enrichedResponse = enrichResponseWithToolDetails(responseWithBoldListNames, shortlistedTools);
 
       const botMessage = {
         id: Date.now() + 1,

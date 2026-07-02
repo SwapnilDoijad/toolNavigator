@@ -343,6 +343,31 @@ function tokenize(text, removeStopWords = false) {
     .filter((token) => !removeStopWords || !STOP_WORDS.has(token));
 }
 
+function expandQueryTokens(tokens) {
+  const expanded = new Set(tokens);
+  const hasAntibiotic = expanded.has("antibiotic") || expanded.has("antimicrobial");
+  const hasResistance = expanded.has("resistance") || expanded.has("resistant");
+  const hasGeneIntent = expanded.has("gene") || expanded.has("genes") || expanded.has("genetic");
+
+  if (hasAntibiotic && hasResistance) {
+    ["amr", "arg", "resistome", "antimicrobial", "antibiotic"].forEach((token) => expanded.add(token));
+  }
+
+  if (hasResistance && hasGeneIntent) {
+    ["amr", "arg", "resistome"].forEach((token) => expanded.add(token));
+  }
+
+  return [...expanded];
+}
+
+function hasAmrIntent(queryTokens) {
+  const tokenSet = new Set(queryTokens);
+  const hasAntibiotic = tokenSet.has("antibiotic") || tokenSet.has("antimicrobial");
+  const hasResistance = tokenSet.has("resistance") || tokenSet.has("resistant");
+  const hasGeneIntent = tokenSet.has("gene") || tokenSet.has("genes") || tokenSet.has("genetic") || tokenSet.has("arg");
+  return (hasAntibiotic && hasResistance) || (hasResistance && hasGeneIntent) || tokenSet.has("amr");
+}
+
 function stemToken(token) {
   let stem = token;
   const suffixes = ["ation", "ments", "ment", "ingly", "edly", "ingly", "ing", "ers", "er", "ies", "ied", "ed", "es", "s"];
@@ -477,12 +502,14 @@ function buildToolsContext(tools, userInput) {
   if (!Array.isArray(tools) || tools.length === 0) return [];
 
   const queryText = normalizeText(userInput);
-  const queryTokens = [...new Set(tokenize(userInput, true))];
+  const baseQueryTokens = [...new Set(tokenize(userInput, true))];
+  const queryTokens = expandQueryTokens(baseQueryTokens);
+  const queryHasAmrIntent = hasAmrIntent(queryTokens);
 
   const scored = tools.map((tool) => {
     const nameText = tool.tool_name || tool.Name || "";
     const aliasesText = getToolAliases(tool);
-    const primaryMatchText = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${getSupportedTechnologies(tool)}`;
+    const primaryMatchText = `${getCategory(tool)} ${getFunctionalCategory(tool)} ${getSecondaryFunction(tool)} ${getSupportedTechnologies(tool)}`;
     const searchableText = normalizeText(
       `${nameText} ${aliasesText} ${getToolAdditionalInfo(tool)} ${primaryMatchText} ${tool.description || tool.Description || ""} ${getCommonUseCases(tool)}`
     );
@@ -515,6 +542,13 @@ function buildToolsContext(tools, userInput) {
 
     if (queryText && searchableText.includes(queryText)) {
       score += 1.5;
+    }
+
+    if (
+      queryHasAmrIntent &&
+      /(\bamr\b|\barg\b|antimicrobial resistance|antibiotic resistance|resistance gene|resistance genes|resistome)/.test(searchableText)
+    ) {
+      score += 2;
     }
 
     return {
@@ -741,13 +775,14 @@ export default function Chatbot({ tools = [], onShortlistTools }) {
       };
 
       if (typeof onShortlistTools === "function") {
-        const identifiedToolKey = extractShortlistedToolKeys(response, shortlistedTools)[0];
+        const identifiedToolKeys = extractShortlistedToolKeys(response, shortlistedTools);
+        const fallbackToolKeys = shortlistedToolNames.map((name) => name.toLowerCase());
         onShortlistTools(
-          identifiedToolKey
-            ? [identifiedToolKey]
-            : shortlistedToolNames.length > 0
-              ? [shortlistedToolNames[0].toLowerCase()]
-              : extractShortlistedToolKeys(response, tools).slice(0, 1)
+          identifiedToolKeys.length > 0
+            ? identifiedToolKeys.slice(0, 8)
+            : fallbackToolKeys.length > 0
+              ? fallbackToolKeys.slice(0, 8)
+              : extractShortlistedToolKeys(response, tools).slice(0, 8)
         );
       }
 

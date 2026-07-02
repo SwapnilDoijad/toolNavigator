@@ -278,7 +278,6 @@ function cleanAssistantResponse(responseText) {
     .replace(/^\s*Tool names \(from the catalog\):\s*\n?/gim, "")
     .replace(/^\s*Supporting details \(what each is typically used for\):\s*\n?/gim, "")
     .replace(/^\s*Relevant tools from the catalog.*?:\s*\n?/gim, "")
-    .replace(/^\s*Quick guidance \(what each is typically used for\):\s*\n?/gim, "")
     .replace(/^\s*If you tell me:\s*\n?/gim, "")
     .replace(/^\s*Here are the relevant tools.*?:\s*\n?/gim, "")
     .replace(/^\s*For annotating phage genomes, start with \*\*pharokka\*\* \(phage-focused annotation\), then use \*\*phageproteometree\*\* \(protein-based functional\/relationship context\) and \*\*phold\*\* \(phage identification\/annotation support\)\.?\s*/gim, "")
